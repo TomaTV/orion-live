@@ -22,14 +22,14 @@ export default function Header() {
                 </div>
               </div>
 
-              <div className="hidden md:flex items-center ml-16 gap-x-12">
-                <button className="text-gray-300 hover:text-white transition-colors">
+              <div className="hidden md:flex items-center ml-16 gap-x-10">
+                <button className="text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg px-4 py-2">
                   Fonctionnalités
                 </button>
-                <button className="text-gray-300 hover:text-white transition-colors">
+                <button className="text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg px-4 py-2">
                   Tarifs
                 </button>
-                <button className="text-gray-300 hover:text-white transition-colors">
+                <button className="text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg px-4 py-2">
                   FAQ
                 </button>
               </div>
@@ -39,7 +39,7 @@ export default function Header() {
             <div className="hidden md:flex items-center space-x-4">
               <Link
                 href="/login"
-                className="text-gray-300 hover:text-white transition-colors"
+                className="text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg px-4 py-2"
               >
                 Connexion
               </Link>
@@ -47,7 +47,7 @@ export default function Header() {
                 href="/register"
                 className="bg-orion-nebula text-white px-4 py-2 rounded-lg hover:bg-transparent border border-orion-nebula hover:border-orion-nebula hover:text-orion-nebula transition-colors font-medium"
               >
-                Commencer
+                Essai gratuit
               </Link>
             </div>
 

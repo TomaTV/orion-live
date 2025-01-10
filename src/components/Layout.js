@@ -1,4 +1,5 @@
 import Header from "./Header";
+import Hero from "./Hero";
 import Image from "next/image";
 
 export default function Layout({ children }) {
@@ -17,6 +18,7 @@ export default function Layout({ children }) {
       </div>
 
       <Header />
+      <Hero />
 
       {/* Contenu principal */}
       <main className="relative z-40">{children}</main>
