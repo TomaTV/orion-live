@@ -2,32 +2,20 @@ import Link from "next/link";
 import Chart from "./ui/Chart";
 
 export default function Hero() {
-  return (
-    <div className="relative z-30 w-full min-h-[80vh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto font-inter text-white pt-24">
-      <div className="space-y-8 text-center">
-        {/* améliorer le visuel */}
-        <h1 className="font-bold text-6xl sm:text-7xl lg:text-8xl max-w-8xl leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-300 to-gray-500">
-          Boostez la performance,
-        </h1>
-        <h2 className="font-bold text-6xl sm:text-7xl lg:text-8xl max-w-8xl leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-300 to-gray-500">
-          de votre site web.
-        </h2>
-       
-        {/* améliorer le visuel */}
-        <p className="text-lg sm:text-xl max-w-2xl mx-auto bg-clip-text text-transparent bg-gradient-to-tr from-white via-white to-[#71717A] leading-relaxed">
-          Orion vous offre des analyses détaillées et des recommandations claires pour optimiser votre présence en ligne.
-        </p>
+ return (
+   <div className="relative w-full min-h-screen flex items-center justify-center -mt-20">
+     <Chart />
+     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg opacity-90"></div>
 
-        {/* bouton à changer */}
-        <div className="flex flex-wrap justify-center gap-4 pt-6">
-          <Link href="/" className="inline-flex items-center px-8 py-4 bg-orion-nebula text-white rounded-lg hover:bg-orion-nebula/90 transition-all transform hover:scale-105">
-            <span className="font-medium">Commencer gratuitement</span>
-          </Link>
-          <Link href="/" className="inline-flex items-center px-8 py-4 border-2 border-orion-nebula text-white rounded-lg hover:bg-orion-nebula/10 transition-all transform hover:scale-105">
-            <span className="font-medium">Voir une démo</span>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+     <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-6 text-center">
+       <h1 className="font-inter font-bold text-6xl sm:text-7xl lg:text-8xl leading-[1.1] bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, white 0%, white 40%, #71717A 100%)' }}>
+         Boostez la performance, le SEO et la sécurité.
+       </h1>
+       
+       <p className="mt-8 text-xl sm:text-2xl max-w-3xl mx-auto text-gray-300 font-inter">
+         Orion vous offre des analyses détaillées et des recommandations claires pour optimiser votre présence en ligne.
+       </p>
+     </div>
+   </div>
+ );
 }
