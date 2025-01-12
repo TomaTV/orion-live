@@ -4,8 +4,6 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
-    windowHistorySupport: true,
-    colorProfile: true,
   },
   async rewrites() {
     return [];
