@@ -74,69 +74,75 @@ export default function HowItWorks() {
             </div>
           </div>
 
-          <div className="order-1 lg:order-2 flex flex-col h-[450px]">
-            <div className="space-y-4">
-              {tabs.map((tab, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <button
-                    onClick={() => setActiveTab(index)}
-                    className={`w-full text-left p-6 rounded-xl border ${
-                      activeTab === index
-                        ? "bg-white/10 border-orion-nebula"
-                        : "bg-white/5 border-white/10 hover:bg-white/[0.07]"
-                    } transition-all duration-300 group`}
+          <div className="order-1 lg:order-2">
+            <div className="relative min-h-[450px]">
+              <div className="space-y-4 absolute w-full">
+                {tabs.map((tab, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-start gap-4">
-                        <div
-                          className={`p-3 rounded-lg ${
-                            activeTab === index
-                              ? "bg-orion-nebula/20"
-                              : "bg-white/5 group-hover:bg-white/10"
-                          } transition-colors duration-300`}
-                        >
-                          <tab.icon
-                            className={`w-6 h-6 ${
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveTab(index)}
+                        className={`w-full text-left p-6 rounded-xl border ${
+                          activeTab === index
+                            ? "bg-white/10 border-orion-nebula"
+                            : "bg-white/5 border-white/10 hover:bg-white/[0.07]"
+                        } transition-colors duration-300 group`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div
+                            className={`p-3 rounded-lg ${
                               activeTab === index
-                                ? "text-orion-nebula"
-                                : "text-gray-400 group-hover:text-white"
+                                ? "bg-orion-nebula/20"
+                                : "bg-white/5 group-hover:bg-white/10"
                             } transition-colors duration-300`}
-                          />
-                        </div>
-
-                        <h3
-                          className={`text-lg font-medium ${
-                            activeTab === index
-                              ? "text-orion-nebula"
-                              : "text-white group-hover:text-orion-nebula"
-                          } transition-colors duration-300`}
-                        >
-                          {tab.title}
-                        </h3>
-                      </div>
-                      <AnimatePresence mode="wait">
-                        {activeTab === index && (
-                          <motion.p
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="text-gray-400 leading-relaxed ml-[3.75rem]"
                           >
-                            {tab.description}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
+                            <tab.icon
+                              className={`w-6 h-6 ${
+                                activeTab === index
+                                  ? "text-orion-nebula"
+                                  : "text-gray-400 group-hover:text-white"
+                              } transition-colors duration-300`}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <h3
+                              className={`text-lg font-medium ${
+                                activeTab === index
+                                  ? "text-orion-nebula"
+                                  : "text-white group-hover:text-orion-nebula"
+                              } transition-colors duration-300`}
+                            >
+                              {tab.title}
+                            </h3>
+                          </div>
+                        </div>
+                        <AnimatePresence mode="wait">
+                          {activeTab === index && (
+                            <motion.p
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{
+                                opacity: { duration: 0.1 },
+                                height: { duration: 0.1 },
+                              }}
+                              className="text-gray-400 leading-relaxed ml-[3.75rem] mt-4 overflow-hidden"
+                            >
+                              {tab.description}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </button>
                     </div>
-                  </button>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

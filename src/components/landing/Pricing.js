@@ -73,65 +73,70 @@ export default function Pricing() {
           {plans.map((plan, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 100 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative group rounded-2xl ${
-                plan.popular
-                  ? "border-2 border-orion-nebula bg-orion-nebula/5"
-                  : "border border-white/10 bg-white/5"
-              } hover:border-orion-nebula/50 transition-all duration-300 h-full flex flex-col`}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{
+                duration: 0.7,
+                delay: index * 0.3,
+                ease: [0.21, 0.47, 0.32, 0.98],
+              }}
+              className="relative group"
             >
-              {/* Card Content */}
-              <div className="p-8 flex-grow flex flex-col">
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-orion-nebula text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Plus populaire
-                    </span>
-                  </div>
-                )}
+              <div
+                className={`${
+                  plan.popular
+                    ? "border-2 border-orion-nebula bg-orion-nebula/5"
+                    : "border border-white/10 bg-white/5"
+                } hover:border-orion-nebula/50 transition-all duration-300 rounded-2xl h-full flex flex-col`}
+              >
+                <div className="p-8 flex-grow flex flex-col">
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <span className="bg-orion-nebula text-white px-3 py-1 rounded-full text-sm font-medium">
+                        Plus populaire
+                      </span>
+                    </div>
+                  )}
 
-                {/* Header */}
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-2 font-spaceg">
-                    {plan.name}
-                  </h3>
-                  <div className="flex items-baseline justify-center gap-x-2 mb-4">
-                    <span className="text-4xl font-bold text-white">
-                      {plan.price}€
-                    </span>
-                    <span className="text-gray-400">/mois</span>
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-white mb-2 font-spaceg">
+                      {plan.name}
+                    </h3>
+                    <div className="flex items-baseline justify-center gap-x-2 mb-4">
+                      <span className="text-4xl font-bold text-white">
+                        {plan.price}€
+                      </span>
+                      <span className="text-gray-400">/mois</span>
+                    </div>
+                    <p className="text-gray-400 text-sm">{plan.description}</p>
                   </div>
-                  <p className="text-gray-400 text-sm">{plan.description}</p>
+
+                  <ul className="space-y-4 mb-8 flex-grow">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li
+                        key={featureIndex}
+                        className="flex items-start gap-x-3"
+                      >
+                        <Check className="w-5 h-5 text-orion-nebula flex-shrink-0 mt-0.5" />
+                        <span className="text-gray-300 text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href="/app"
+                    className={`block w-full text-center py-3 px-4 rounded-lg transition-colors mt-auto ${
+                      plan.popular
+                        ? "bg-orion-nebula hover:bg-orion-nebula/90 text-white"
+                        : "bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-orion-nebula"
+                    }`}
+                  >
+                    {plan.cta}
+                  </Link>
                 </div>
-
-                {/* Features List */}
-                <ul className="space-y-4 mb-8 flex-grow">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start gap-x-3">
-                      <Check className="w-5 h-5 text-orion-nebula flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-300 text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA Button */}
-                <Link
-                  href="/app"
-                  className={`block w-full text-center py-3 px-4 rounded-lg transition-colors mt-auto ${
-                    plan.popular
-                      ? "bg-orion-nebula hover:bg-orion-nebula/90 text-white"
-                      : "bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-orion-nebula"
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-orion-nebula/0 via-orion-nebula/5 to-orion-nebula/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </div>
-
-              {/* Gradient effect on hover */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-orion-nebula/0 via-orion-nebula/5 to-orion-nebula/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </motion.div>
           ))}
         </div>
