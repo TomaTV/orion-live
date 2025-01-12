@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu } from "lucide-react";
 import { useState, useEffect } from "react";
+import { scrollTo } from "../hooks/useSmoothScroll";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -22,8 +23,13 @@ export default function Header() {
     };
   }, [scrolled]);
 
+  const handleNavClick = (e, target) => {
+    e.preventDefault();
+    scrollTo(target);
+  };
+
   return (
-    <header className="relative z-30 w-full h-16 font-spaceg">
+    <header className="relative z-30 w-full h-15 font-spaceg">
       <div
         className={`fixed w-full top-0 transition-all duration-300 ${
           scrolled ? "bg-black/20 backdrop-blur-lg" : "bg-transparent"
@@ -31,7 +37,11 @@ export default function Header() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
-            <Link href="/" className="flex items-center gap-x-3">
+            <Link
+              href="#hero"
+              className="flex items-center gap-x-3"
+              onClick={(e) => handleNavClick(e, "#hero")}
+            >
               <div className="relative">
                 <Image
                   src="/img/logo.png"
@@ -45,24 +55,27 @@ export default function Header() {
             </Link>
 
             <div className="hidden md:flex items-center gap-x-8 mx-16">
-              <Link
+              <a
                 href="#features"
+                onClick={(e) => handleNavClick(e, "#features")}
                 className="text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg px-4 py-2"
               >
                 Fonctionnalités
-              </Link>
-              <Link
+              </a>
+              <a
                 href="#pricing"
+                onClick={(e) => handleNavClick(e, "#pricing")}
                 className="text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg px-4 py-2"
               >
                 Tarifs
-              </Link>
-              <Link
+              </a>
+              <a
                 href="#faq"
+                onClick={(e) => handleNavClick(e, "#faq")}
                 className="text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg px-4 py-2"
               >
                 FAQ
-              </Link>
+              </a>
             </div>
 
             <div className="hidden md:flex items-center gap-x-4 ml-auto">
