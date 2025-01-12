@@ -7,6 +7,8 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import Faq from "@/components/landing/FAQ";
 import Image from "next/image";
 
+import { useSmoothScroll } from "@/components/hooks/useSmoothScroll";
+
 export default function Home() {
   const [opacity, setOpacity] = useState(1);
 
@@ -17,6 +19,8 @@ export default function Home() {
     window.addEventListener("scroll", updateOpacity);
     return () => window.removeEventListener("scroll", updateOpacity);
   }, []);
+
+  useSmoothScroll();
 
   return (
     <div className="relative min-h-screen bg-orion-dark-bg">
