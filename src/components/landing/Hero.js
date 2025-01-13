@@ -2,8 +2,13 @@ import Link from "next/link";
 import Chart from "../ui/Chart";
 import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { scrollTo } from "../hooks/useSmoothScroll";
 
 export default function Hero() {
+  const handleHeroClick = (e, target) => {
+    e.preventDefault();
+    scrollTo(target);
+  };
   return (
     <div className="relative w-full min-h-screen flex flex-col items-center justify-center -mt-20">
       {/* Chart en arrière-plan */}
@@ -46,6 +51,7 @@ export default function Hero() {
           <div className="relative overflow-hidden rounded-full">
             <Link
               href="#howitworks"
+              onClick={(e) => handleHeroClick(e, "#howitworks")}
               className="group relative flex items-center gap-2 px-8 py-4 text-white border-t border-l border-r border-white/20 rounded-full transition-all duration-300 hover:bg-black/20 overflow-hidden"
             >
               <div className="absolute bottom-0 left-0 right-0 h-[2px]">

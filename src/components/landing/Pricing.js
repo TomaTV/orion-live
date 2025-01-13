@@ -6,46 +6,54 @@ const plans = [
   {
     name: "Gratuit",
     price: "0",
+    credits: "2 crédits offerts à l'inscription, pas de crédits récurrents",
     description:
-      "Testez Orion gratuitement avec des fonctionnalités de base. Idéal pour une première prise en main.",
+      "Testez Orion sans engagement. Explorez nos outils et effectuez vos premières analyses gratuitement.",
     features: [
-      "Analyse de performance limitée",
-      "1 site web pour les audits",
-      "Recommandations de base",
+      "Analyse de performance basique",
+      "1 site pour les audits",
+      "Recommandations simples",
+      "Aperçu des performances gratuit",
     ],
-    cta: "Commencer gratuitement",
+    cta: "Démarrer gratuitement",
     popular: false,
   },
   {
     name: "Pro",
     price: "29",
+    credits: "5 crédits par mois inclus (non cumulables)",
     description:
-      "Pour les professionnels qui ont besoin de fonctionnalités complètes pour une analyse de site web approfondie.",
+      "Accédez à des analyses avancées, optimisez votre SEO et gérez jusqu'à 5 sites pour un suivi complet.",
     features: [
-      "Analyse complète de la performance",
-      "Audit SEO de base (balises, mots-clés)",
-      "5 sites pour les audits",
-      "Recommandations avancées",
-      "Rapports détaillés",
+      "Analyse de performance complète",
+      "Audit SEO approfondi",
+      "Jusqu'à 5 sites pour les audits",
+      "Statistiques historiques (30 jours)",
+      "Recommandations détaillées",
+      "Achat de crédits supplémentaires",
+      "Téléchargement des rapports",
     ],
-    cta: "Choisir le plan Pro",
+    cta: "Passer au plan Pro",
     popular: true,
   },
   {
     name: "Entreprise",
     price: "99",
+    credits: "15 crédits par mois inclus (non cumulables)",
     description:
-      "Pour les grandes entreprises ou agences nécessitant des fonctionnalités avancées et la gestion de plusieurs sites.",
+      "La solution idéale pour les entreprises. Avec une analyse avancées et des rapports détaillés.",
     features: [
-      "Tout du plan Pro",
-      "10 sites pour les audits",
-      "Analyse de la sécurité et accessibilité",
-      "Accès aux statistiques historiques sur 90 jours",
-      "Recommandations de sécurité et accessibilité",
-      "Gestion multi-sites (10+ sites)",
+      "Tout du plan Pro, plus des fonctions avancées",
+      "Analyse sécurité et accessibilité",
+      "Gérez jusqu'à 10 sites",
+      "Statistiques historiques (90 jours)",
+      "Recommandations en sécurité",
       "Support prioritaire",
+      "Gestion multi-sites",
+      "Rapports exclusifs de performance",
+      "Téléchargement complet des rapports",
     ],
-    cta: "Demander une démo",
+    cta: "Demander une démo gratuite",
     popular: false,
   },
 ];
@@ -107,8 +115,13 @@ export default function Pricing() {
                       <span className="text-4xl font-bold text-white">
                         {plan.price}€
                       </span>
-                      <span className="text-gray-400">/mois</span>
+                      {plan.price !== "0" && (
+                        <span className="text-gray-400">/mois</span>
+                      )}
                     </div>
+                    <p className="text-lg font-medium text-orion-nebula mb-4">
+                      {plan.credits}
+                    </p>
                     <p className="text-gray-400 text-sm">{plan.description}</p>
                   </div>
 
@@ -125,7 +138,7 @@ export default function Pricing() {
                   </ul>
 
                   <Link
-                    href="/app"
+                    href={plan.price === "0" ? "/app" : "/checkout"}
                     className={`block w-full text-center py-3 px-4 rounded-lg transition-colors mt-auto ${
                       plan.popular
                         ? "bg-orion-nebula hover:bg-orion-nebula/90 text-white"

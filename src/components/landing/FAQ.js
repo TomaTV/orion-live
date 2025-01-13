@@ -6,32 +6,32 @@ const faqs = [
   {
     question: "Comment Orion peut-il améliorer les performances de mon site ?",
     answer:
-      "Orion identifie les points faibles de votre site et propose des recommandations pour optimiser la vitesse, comme la gestion des images, la mise en cache et la minification du code.",
+      "Orion analyse la vitesse de votre site et vous propose des recommandations pour optimiser la gestion des images, la mise en cache et la minification du code.",
   },
   {
     question: "Quelles sont les fonctionnalités de sécurité proposées ?",
     answer:
-      "Orion détecte les vulnérabilités, les tentatives d'intrusion et les attaques DDoS. Il fournit également des recommandations pour renforcer la sécurité et sauvegarde automatiquement vos données.",
+      "Orion détecte les vulnérabilités, les tentatives d'intrusion et les attaques DDoS, et propose des actions pour renforcer la sécurité de votre site.",
   },
   {
     question: "Comment fonctionne l'optimisation SEO d'Orion ?",
     answer:
-      "Orion analyse vos contenus, la structure du site et vos backlinks, puis vous fournit des recommandations SEO détaillées et vous alerte en cas de changement significatif.",
+      "Orion évalue vos contenus, la structure de votre site et vos backlinks pour fournir des recommandations détaillées et vous alerter en cas de changement significatif.",
   },
   {
     question: "Puis-je essayer Orion gratuitement ?",
     answer:
-      "Oui, vous avez 14 jours d’essai gratuit avec toutes les fonctionnalités Pro, sans carte de crédit nécessaire. Essayez et voyez si Orion vous convient !",
-  },
-  {
-    question: "Comment fonctionne le support client ?",
-    answer:
-      "Le support est disponible par email 7j/7. Les utilisateurs Pro et Enterprise bénéficient d'un support prioritaire, et les clients Enterprise ont un support téléphonique 24/7.",
+      "Oui, vous bénéficiez de 2 crédits gratuits à l'inscription pour tester nos outils sans engagement. Vous pouvez découvrir les fonctionnalités de base d'Orion sans frais.",
   },
   {
     question: "Est-il possible de changer de plan à tout moment ?",
     answer:
-      "Oui, vous pouvez changer de plan à tout moment, sans engagement. Les modifications sont prises en compte immédiatement et la facturation est ajustée au prorata.",
+      "Oui, vous pouvez changer de plan à tout moment. Les modifications sont appliquées immédiatement et la facturation est ajustée en fonction de votre nouveau plan.",
+  },
+  {
+    question: "Puis-je télécharger les rapports d'analyse ?",
+    answer:
+      "Oui, le téléchargement des rapports est inclus dans les plans Pro et Entreprise pour faciliter le suivi et l'archivage de vos analyses.",
   },
 ];
 

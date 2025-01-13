@@ -3,9 +3,9 @@ import {
   Gauge,
   Search,
   BarChart3,
-  Bell,
   Lightbulb,
-  ShieldCheck,
+  RefreshCw,
+  Brain,
 } from "lucide-react";
 
 const features = [
@@ -13,37 +13,37 @@ const features = [
     icon: Gauge,
     title: "Analyse de performance",
     description:
-      "Évaluez la vitesse de chargement de votre site et optimisez ses performances pour améliorer l'expérience utilisateur.",
+      "Évaluez la vitesse de chargement de votre site et optimisez sa performance pour une meilleure expérience utilisateur.",
   },
   {
     icon: Search,
     title: "Audit SEO",
     description:
-      "Améliorez votre référencement avec des analyses détaillées des balises, mots-clés et backlinks de votre site.",
+      "Améliorez votre référencement avec des analyses sur les balises, mots-clés et backlinks de votre site.",
   },
   {
     icon: BarChart3,
     title: "Rapports interactifs",
     description:
-      "Visualisez vos résultats avec des graphiques interactifs et des rapports détaillés facilement compréhensibles.",
-  },
-  {
-    icon: Bell,
-    title: "Alertes en temps réel",
-    description:
-      "Recevez des notifications immédiates pour toute anomalie affectant la performance ou la sécurité de votre site.",
+      "Consultez vos résultats à travers des graphiques interactifs et des rapports détaillés.",
   },
   {
     icon: Lightbulb,
     title: "Recommandations personnalisées",
     description:
-      "Obtenez des conseils sur mesure pour améliorer la vitesse, le SEO, la sécurité et l'accessibilité de votre site.",
+      "Bénéficiez de conseils ciblés pour améliorer la vitesse, le SEO, la sécurité et l'accessibilité de votre site.",
   },
   {
-    icon: ShieldCheck,
-    title: "Sécurisation avancée",
+    icon: Brain,
+    title: "Optimisation IA",
     description:
-      "Analysez et corrigez les vulnérabilités critiques de votre site pour garantir sa sécurité.",
+      "L'IA analyse votre site et génère des astuces précises adaptées à ses besoins pour améliorer ses performances et sa visibilité.",
+  },
+  {
+    icon: RefreshCw,
+    title: "Suivi dynamique",
+    description:
+      "Suivez en temps réel les performances de votre site et ajustez-les automatiquement selon les évolutions observées.",
   },
 ];
 
