@@ -36,8 +36,14 @@ export function MetricCard({ label, value, description, type = "default" }) {
       </div>
       <div className="flex items-baseline mt-2">
         <span className="text-2xl font-bold text-gray-900">{displayValue}</span>
-        {type === "default" && value && (
-          <span className="ml-1 text-gray-500"> s</span>
+        {type === "default" &&
+          value &&
+          !value.includes("m") &&
+          label !== "Total Blocking Time" && (
+            <span className="ml-1 text-gray-500">s</span>
+          )}
+        {label === "Total Blocking Time" && (
+          <span className="ml-1 text-gray-500">ms</span>
         )}
         {type === "cls" && <span className="ml-1 text-gray-500">unités</span>}
       </div>
