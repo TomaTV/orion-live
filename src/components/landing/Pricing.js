@@ -13,7 +13,6 @@ const plans = [
       "Analyse de performance basique",
       "1 site pour les audits",
       "Recommandations simples",
-      "Aperçu des performances gratuit",
     ],
     cta: "Démarrer gratuitement",
     popular: false,
@@ -28,9 +27,7 @@ const plans = [
       "Analyse de performance complète",
       "Audit SEO approfondi",
       "Jusqu'à 5 sites pour les audits",
-      "Statistiques historiques (30 jours)",
       "Recommandations détaillées",
-      "Achat de crédits supplémentaires",
       "Téléchargement des rapports",
     ],
     cta: "Passer au plan Pro",
@@ -45,15 +42,13 @@ const plans = [
     features: [
       "Tout du plan Pro, plus des fonctions avancées",
       "Analyse sécurité et accessibilité",
-      "Gérez jusqu'à 10 sites",
       "Statistiques historiques (90 jours)",
       "Recommandations en sécurité",
       "Support prioritaire",
-      "Gestion multi-sites",
       "Rapports exclusifs de performance",
       "Téléchargement complet des rapports",
     ],
-    cta: "Demander une démo gratuite",
+    cta: "Contacter l'équipe",
     popular: false,
   },
 ];
@@ -138,7 +133,13 @@ export default function Pricing() {
                   </ul>
 
                   <Link
-                    href={plan.price === "0" ? "/app" : "/checkout"}
+                    href={
+                      plan.price === "0"
+                        ? "/app"
+                        : plan.price === "99"
+                          ? "/contact"
+                          : "/checkout"
+                    }
                     className={`block w-full text-center py-3 px-4 rounded-lg transition-colors mt-auto ${
                       plan.popular
                         ? "bg-orion-nebula hover:bg-orion-nebula/90 text-white"
