@@ -46,7 +46,7 @@ export default function FAQ() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-20"
+          className="text-center mb-8"
         >
           <h2 className="text-4xl font-bold text-white mb-6 font-spaceg">
             Questions fréquentes

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Chart from "../ui/Chart";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ChevronDown, WandSparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { scrollTo } from "../hooks/useSmoothScroll";
 
@@ -41,7 +41,6 @@ export default function Hero() {
           claires pour optimiser votre présence en ligne.
         </motion.p>
 
-        {/* Bouton CTA amélioré */}
         <motion.div
           className="mt-14 flex justify-center"
           initial={{ opacity: 0, y: 20 }}
@@ -62,12 +61,21 @@ export default function Hero() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orion-nebula to-transparent" />
               </div>
 
-              <Sparkles className="w-5 h-5" />
+              <Sparkles className="w-5 h-5 group-hover:hidden" />
+              <WandSparkles className="w-5 h-5 hidden group-hover:block" />
               <span>Voir une démo</span>
             </Link>
           </div>
         </motion.div>
       </motion.div>
+    <motion.div
+      className="absolute bottom-0 left-0 right-0 flex justify-center"
+      initial={{ y: 0 }}
+      animate={{ y: [0, 10, 0] }}
+      transition={{ repeat: Infinity, duration: 1 }}
+    >
+      <ChevronDown className="w-8 h-8 text-white opacity-80" />
+    </motion.div>
     </div>
   );
 }

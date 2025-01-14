@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import Lenis from "@studio-freight/lenis";
+import Lenis from "lenis";
 
 export const scrollTo = (target) => {
   if (typeof window !== "undefined" && window.lenis) {

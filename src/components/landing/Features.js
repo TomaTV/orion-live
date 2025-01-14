@@ -58,7 +58,7 @@ export default function Features() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center max-w-4xl mx-auto mb-20"
+          className="text-center max-w-4xl mx-auto mb-8"
         >
           <h2 className="text-4xl font-bold mb-6">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300 font-spaceg">
