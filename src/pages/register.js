@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import { AlertCircle, Loader2, UserPlus } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Loader2, UserPlus } from "lucide-react";
 import LoginBackground from "../components/ui/LoginBackground";
 import Link from "next/link";
 
@@ -14,6 +14,11 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const MAX_ATTEMPTS = 5;
+  const ATTEMPT_RESET_TIME = 30 * 60 * 1000; // 30 minutes en millisecondes
 
   const validateForm = () => {
     const newErrors = {};
@@ -52,7 +57,19 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+
+    // Vérifier le nombre de tentatives
+    if (attemptCount >= MAX_ATTEMPTS) {
+      setErrors({
+        general: `Trop de tentatives. Veuillez réessayer dans ${Math.ceil(ATTEMPT_RESET_TIME / 60000)} minutes.`,
+      });
+      return;
+    }
+
+    if (!validateForm()) {
+      setAttemptCount((prev) => prev + 1);
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -68,9 +85,18 @@ export default function Register() {
         router.push("/login?registered=true");
       } else {
         setErrors({ general: data.message });
+        setAttemptCount((prev) => prev + 1);
+
+        // Si max tentatives atteint, programmer la réinitialisation
+        if (attemptCount + 1 >= MAX_ATTEMPTS) {
+          setTimeout(() => {
+            setAttemptCount(0);
+          }, ATTEMPT_RESET_TIME);
+        }
       }
     } catch (error) {
       setErrors({ general: "Une erreur est survenue" });
+      setAttemptCount((prev) => prev + 1);
     } finally {
       setIsLoading(false);
     }
@@ -134,15 +160,29 @@ export default function Register() {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Mot de passe
               </label>
-              <input
-                type="password"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-orion-nebula focus:border-transparent"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-orion-nebula focus:border-transparent"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                >
+                  {showPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
                 <p className="mt-1 text-sm text-red-400">{errors.password}</p>
               )}
@@ -152,15 +192,32 @@ export default function Register() {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Confirmer le mot de passe
               </label>
-              <input
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-orion-nebula focus:border-transparent"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-orion-nebula focus:border-transparent"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                >
+                  {showConfirmPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               {errors.confirmPassword && (
                 <p className="mt-1 text-sm text-red-400">
                   {errors.confirmPassword}
