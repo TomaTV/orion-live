@@ -24,10 +24,22 @@ export default function Register() {
       newErrors.email = "Format d'email invalide";
     }
 
+    // Validation du mot de passe - une erreur à la fois
     if (!formData.password) {
       newErrors.password = "Le mot de passe est requis";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Le mot de passe doit faire au moins 6 caractères";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Le mot de passe doit faire au moins 8 caractères";
+    } else if (!/[A-Z]/.test(formData.password)) {
+      newErrors.password =
+        "Le mot de passe doit contenir au moins une majuscule";
+    } else if (!/[a-z]/.test(formData.password)) {
+      newErrors.password =
+        "Le mot de passe doit contenir au moins une minuscule";
+    } else if (!/[0-9]/.test(formData.password)) {
+      newErrors.password = "Le mot de passe doit contenir au moins un chiffre";
+    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+      newErrors.password =
+        "Le mot de passe doit contenir au moins un caractère spécial";
     }
 
     if (formData.password !== formData.confirmPassword) {
