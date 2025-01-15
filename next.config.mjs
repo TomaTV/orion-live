@@ -10,6 +10,9 @@ const nextConfig = {
   },
   poweredByHeader: false,
   reactStrictMode: true,
+  images: {
+    domains: ["www.gravatar.com"], // Ajoutez Gravatar ici
+  },
 };
 
 export default nextConfig;
