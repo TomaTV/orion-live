@@ -96,7 +96,7 @@ export default function Pricing() {
                 <div className="p-8 flex-grow flex flex-col">
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <span className="bg-orion-nebula text-white px-3 py-1 rounded-full text-sm font-medium">
+                      <span className="bg-orion-nebula text-white px-3 py-1 rounded-full text-sm font-medium font-spaceg">
                         Plus populaire
                       </span>
                     </div>
