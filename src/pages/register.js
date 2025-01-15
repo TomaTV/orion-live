@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import { LogIn, AlertCircle, Loader2, UserPlus } from "lucide-react";
+import { AlertCircle, Loader2, UserPlus } from "lucide-react";
 import LoginBackground from "../components/ui/LoginBackground";
 import Link from "next/link";
 
@@ -180,6 +180,13 @@ export default function Register() {
                 className="text-orion-nebula hover:text-orion-light-blue transition-colors"
               >
                 Se connecter
+              </Link>
+              {" • "}
+              <Link
+                href="/"
+                className="text-orion-nebula hover:text-orion-light-blue transition-colors"
+              >
+                Retour à l&apos;accueil
               </Link>
             </p>
           </div>

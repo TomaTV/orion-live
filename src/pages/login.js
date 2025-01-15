@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import { LogIn, AlertCircle, Loader2 } from "lucide-react";
+import { Home, LogIn, AlertCircle, Loader2 } from "lucide-react";
 import LoginBackground from "../components/ui/LoginBackground";
 import Link from "next/link";
 
@@ -98,13 +98,6 @@ export default function Login() {
       <LoginBackground />
 
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg opacity-90" />
-
-      <Link
-        href="/"
-        className="absolute top-2 left-2 w-10 h-10 flex items-center justify-center"
-      >
-        <LogIn className="w-8 h-8 text-orion-nebula" />
-      </Link>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -289,6 +282,13 @@ export default function Login() {
                 className="text-orion-nebula hover:text-orion-light-blue transition-colors"
               >
                 Créer un compte
+              </Link>
+              {" • "}
+              <Link
+                href="/"
+                className="text-orion-nebula hover:text-orion-light-blue transition-colors"
+              >
+                Retour à l&apos;accueil
               </Link>
             </p>
           </div>

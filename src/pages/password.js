@@ -139,6 +139,13 @@ export default function ForgotPassword() {
               >
                 Se connecter
               </Link>
+              {" • "}
+              <Link
+                href="/"
+                className="text-orion-nebula hover:text-orion-light-blue transition-colors"
+              >
+                Retour à l&apos;accueil
+              </Link>
             </p>
           </div>
         </div>
