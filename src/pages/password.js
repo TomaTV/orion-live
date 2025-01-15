@@ -29,7 +29,7 @@ export default function ForgotPassword() {
     setError("");
 
     try {
-      const res = await fetch("/api/auth/password", {
+      const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -38,6 +38,7 @@ export default function ForgotPassword() {
       const data = await res.json();
 
       if (res.ok) {
+        localStorage.setItem("resetEmail", email);
         router.push("/password-reset");
       } else {
         setError(data.message || "Une erreur est survenue");

@@ -68,14 +68,14 @@ export default function Hero() {
           </div>
         </motion.div>
       </motion.div>
-    <motion.div
-      className="absolute bottom-0 left-0 right-0 flex justify-center"
-      initial={{ y: 0 }}
-      animate={{ y: [0, 10, 0] }}
-      transition={{ repeat: Infinity, duration: 1 }}
-    >
-      <ChevronDown className="w-8 h-8 text-white opacity-80" />
-    </motion.div>
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 flex justify-center"
+        initial={{ y: 0 }}
+        animate={{ y: [0, 10, 0] }}
+        transition={{ repeat: Infinity, duration: 1 }}
+      >
+        <ChevronDown className="w-8 h-8 text-white opacity-80" />
+      </motion.div>
     </div>
   );
 }

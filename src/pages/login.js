@@ -247,12 +247,12 @@ export default function Login() {
                 </label>
               </div>
 
-              <a
+              <Link
                 href="/password"
                 className="text-sm text-orion-nebula hover:text-orion-light-blue transition-colors"
               >
                 Mot de passe oublié ?
-              </a>
+              </Link>
             </div>
 
             <div className="relative overflow-hidden rounded-full">
