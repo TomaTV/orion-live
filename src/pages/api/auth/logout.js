@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
     res.setHeader(
       "Set-Cookie",
-      "auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT"
+      "auth=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:01 GMT"
     );
 
     res.status(200).json({ message: "Déconnexion réussie" });

@@ -7,6 +7,18 @@ export default async function handler(req, res) {
   }
 
   try {
+    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const validatePassword = (password) => password.length >= 6;
+
+    if (
+      !validateEmail(req.body.email) ||
+      !validatePassword(req.body.password)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Email ou mot de passe invalide." });
+    }
+
     const { email, password } = req.body;
 
     const [existingUsers] = await pool.query(
@@ -18,7 +30,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: "Cet email est déjà utilisé" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     await pool.query("INSERT INTO users (email, password) VALUES (?, ?)", [
       email,
