@@ -64,10 +64,20 @@ export default async function handler(req, res) {
       [email]
     );
 
-    await pool.query(
-      "INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))",
-      [user.id, token]
-    );
+    // Insertion de la session (une seule fois)
+    try {
+      await pool.query(
+        "INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))",
+        [user.id, token]
+      );
+    } catch (error) {
+      console.error("Erreur lors de l'insertion de la session:", error);
+      return res
+        .status(500)
+        .json({ message: "Erreur lors de la création de la session" });
+    }
+
+    // Suppression des sessions expirées
     await pool.query("DELETE FROM sessions WHERE expires_at < NOW()");
 
     res.setHeader(
