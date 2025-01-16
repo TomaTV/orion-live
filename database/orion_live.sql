@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mer. 15 jan. 2025 à 17:16
+-- Généré le : jeu. 16 jan. 2025 à 13:17
 -- Version du serveur : 10.4.21-MariaDB
 -- Version de PHP : 8.0.12
 
@@ -28,8 +28,8 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `password_resets` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `token` varchar(255) NOT NULL,
   `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
@@ -42,8 +42,8 @@ CREATE TABLE `password_resets` (
 --
 
 CREATE TABLE `profiles` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `first_name` varchar(100) DEFAULT NULL,
   `last_name` varchar(100) DEFAULT NULL,
   `avatar_url` varchar(255) DEFAULT NULL,
@@ -59,16 +59,14 @@ CREATE TABLE `profiles` (
 --
 
 CREATE TABLE `sessions` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `token` varchar(255) NOT NULL,
   `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Déchargement des données de la table `sessions`
---
 
 -- --------------------------------------------------------
 
@@ -77,23 +75,25 @@ CREATE TABLE `sessions` (
 --
 
 CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
+  `id` bigint(20) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `last_login` timestamp NULL DEFAULT NULL,
   `failed_attempts` int(11) DEFAULT 0,
-  `lock_until` datetime DEFAULT NULL,
-  `credits` int(11) DEFAULT 0
+  `lock_until` timestamp NULL DEFAULT NULL,
+  `credits` int(11) DEFAULT 0,
+  `last_ip` varchar(45) DEFAULT NULL,
+  `last_user_agent` text DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+  `created_ip` varchar(45) DEFAULT NULL,
+  `created_user_agent` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Déchargement des données de la table `users`
 --
-
-INSERT INTO `users` (`id`, `email`, `password`, `created_at`, `last_login`, `failed_attempts`, `lock_until`, `credits`) VALUES
-(4, 'toto@free.fr', '$2a$12$Gh1SDICL4L.q5xC5dTQ0Au99oDojHUcaiS40zBbyjU03.wtdzXmBu', '2025-01-15 15:17:50', '2025-01-15 15:32:12', 0, NULL, 10),
-(5, 'toto2@free.fr', '$2a$12$qCuKjQ47EX5aBVtNoJaowOUn4qjvkV4UoORZVrNV8EAtybMpSaiA2', '2025-01-15 15:28:30', '2025-01-15 15:38:24', 0, NULL, 0);
 
 --
 -- Index pour les tables déchargées
@@ -105,8 +105,8 @@ INSERT INTO `users` (`id`, `email`, `password`, `created_at`, `last_login`, `fai
 ALTER TABLE `password_resets`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `token` (`token`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `idx_password_resets_token` (`token`);
+  ADD KEY `idx_password_resets_token` (`token`),
+  ADD KEY `password_resets_ibfk_1` (`user_id`);
 
 --
 -- Index pour la table `profiles`
@@ -121,8 +121,8 @@ ALTER TABLE `profiles`
 ALTER TABLE `sessions`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `token` (`token`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `idx_sessions_token` (`token`);
+  ADD KEY `idx_sessions_token` (`token`),
+  ADD KEY `sessions_ibfk_1` (`user_id`);
 
 --
 -- Index pour la table `users`
@@ -140,25 +140,25 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT pour la table `profiles`
 --
 ALTER TABLE `profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Contraintes pour les tables déchargées
