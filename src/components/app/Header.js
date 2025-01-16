@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { LogOut } from "lucide-react"; // Importer l'icône Lucide
+import Link from "next/link";
 
 function HeaderApp() {
   const [credits, setCredits] = useState(0);
@@ -54,11 +55,15 @@ function HeaderApp() {
 
         {/* Section droite : Crédits + Déconnexion */}
         <div className="flex items-center space-x-4">
-          {/* Crédits */}
           <span className="text-white text-sm font-medium">
             Crédits : <span className="font-bold text-blue-400">{credits}</span>
           </span>
-
+          <Link
+            href="/pricing"
+            className="text-gray-300 hover:text-green-600 transition-colors"
+          >
+            +
+          </Link>
           {/* Icône de déconnexion */}
           <button
             onClick={handleLogout}
