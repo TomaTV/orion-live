@@ -12,19 +12,22 @@ export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = () => {
-    if (!email) return "L'email est requis";
+    if (!email.trim()) return "L'email est requis"; // Vérifie si le champ est vide
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return "Format d'email invalide";
-    return "";
+    return ""; // Pas d'erreur
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation de l'email avant de continuer
     const emailError = validateEmail();
     if (emailError) {
       setError(emailError);
       return;
     }
+
     setIsLoading(true);
     setError("");
 
@@ -38,13 +41,17 @@ export default function ForgotPassword() {
       const data = await res.json();
 
       if (res.ok) {
+        // Succès : redirection
         localStorage.setItem("resetEmail", email);
         router.push("/password-reset");
       } else {
-        setError(data.message || "Une erreur est survenue");
+        // Échec : afficher l'erreur retournée par l'API
+        setError(data.error || "Une erreur est survenue");
       }
     } catch (error) {
-      setError("Une erreur est survenue");
+      // Gestion des erreurs réseau
+      console.error("Erreur réseau:", error);
+      setError("Une erreur est survenue. Veuillez réessayer.");
     } finally {
       setIsLoading(false);
     }
