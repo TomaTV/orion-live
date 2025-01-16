@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+const config = {
   content: ["./src/pages/**/*.{js,jsx}", "./src/components/**/*.{js,jsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -22,3 +23,5 @@ export default {
   },
   plugins: [],
 };
+
+export default config;

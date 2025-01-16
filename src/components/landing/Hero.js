@@ -1,18 +1,22 @@
 import Link from "next/link";
 import Chart from "../ui/Chart";
 import { Sparkles, ChevronDown, WandSparkles } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { scrollTo } from "../hooks/useSmoothScroll";
+import useMobile from "../hooks/useMobile";
 
 export default function Hero() {
+  const isMobile = useMobile();
+
   const handleHeroClick = (e, target) => {
     e.preventDefault();
     scrollTo(target);
   };
+
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-center justify-center -mt-20">
+    <div className="relative w-full min-h-[100svh] flex flex-col items-center justify-center -mt-20">
       {/* Chart en arrière-plan */}
-      <Chart />
+      {!isMobile && <Chart />}
 
       {/* Gradient overlay amélioré */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg opacity-90" />
@@ -22,27 +26,39 @@ export default function Hero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative z-10 mx-auto px-4 sm:px-6 text-center"
+        className="relative z-10 mx-auto px-4 sm:px-6 text-center max-w-7xl"
       >
         <motion.h1
-          className="font-inter font-bold text-[5rem] sm:text-[6rem] lg:text-[7rem] tracking-tight leading-[1.1] bg-clip-text text-transparent"
+          className="font-inter font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.1] bg-clip-text text-transparent mb-4 md:mb-6"
           style={{
             backgroundImage:
               "linear-gradient(160deg, #FFFFFF 0%, rgba(255, 255, 255, 0.95) 25%, rgba(255, 255, 255, 0.85) 50%, rgba(113, 113, 122, 0.9) 75%, #71717A 100%)",
           }}
         >
-          Boostez la performance,
-          <br />
-          le SEO et la sécurité
+          {isMobile ? (
+            <>
+              Boostez la
+              <br />
+              performance, le SEO
+              <br />
+              et la sécurité
+            </>
+          ) : (
+            <>
+              Boostez la performance,
+              <br />
+              le SEO et la sécurité
+            </>
+          )}
         </motion.h1>
 
-        <motion.p className="mt-8 text-xl sm:text-2xl max-w-3xl mx-auto text-gray-300 font-inter">
+        <motion.p className="mt-4 sm:mt-6 text-lg sm:text-xl md:text-2xl max-w-2xl md:max-w-3xl mx-auto text-gray-300 font-inter px-4">
           Orion vous offre des analyses détaillées et des recommandations
           claires pour optimiser votre présence en ligne.
         </motion.p>
 
         <motion.div
-          className="mt-14 flex justify-center"
+          className="mt-8 sm:mt-10 md:mt-14 flex justify-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
@@ -61,20 +77,32 @@ export default function Hero() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orion-nebula to-transparent" />
               </div>
 
-              <Sparkles className="w-5 h-5 group-hover:hidden" />
-              <WandSparkles className="w-5 h-5 hidden group-hover:block" />
+              <motion.div className="relative">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    className="w-5 h-5"
+                    initial={{ opacity: 0, rotate: -90 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: 90 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Sparkles className="w-5 h-5 absolute inset-0 group-hover:opacity-0 transition-opacity duration-300" />
+                    <WandSparkles className="w-5 h-5 absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
               <span>Voir une démo</span>
             </Link>
           </div>
         </motion.div>
       </motion.div>
       <motion.div
-        className="absolute bottom-0 left-0 right-0 flex justify-center"
+        className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-0 right-0 flex justify-center"
         initial={{ y: 0 }}
         animate={{ y: [0, 10, 0] }}
         transition={{ repeat: Infinity, duration: 1 }}
       >
-        <ChevronDown className="w-8 h-8 text-white opacity-80" />
+        <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-white opacity-80" />
       </motion.div>
     </div>
   );

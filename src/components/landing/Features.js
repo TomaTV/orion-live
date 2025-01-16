@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Brain,
 } from "lucide-react";
+import useMobile from "../hooks/useMobile";
 
 const features = [
   {
@@ -54,27 +55,28 @@ const features = [
 ];
 
 const sizeClasses = {
-  square: "col-span-1 row-span-1 h-64",
-  wide: "col-span-2 row-span-1 h-64",
-  tall: "col-span-1 row-span-2 h-[33.5rem]",
+  square: "col-span-1 row-span-1 h-64", // Version desktop
+  wide: "col-span-2 row-span-1 h-64", // Version desktop
+  tall: "col-span-1 row-span-2 h-[33.5rem]", // Version desktop
 };
 
 const featureVariants = {
-  hidden: { opacity: 0, scale: 0.9, rotate: 0, y: 50 },
+  hidden: { opacity: 0, scale: 0.9, y: 50 },
   visible: (index) => ({
     opacity: 1,
     scale: 1,
-    rotate: 0,
     y: 0,
     transition: {
       duration: 0.7,
       ease: "easeOut",
-      delay: index * 0.15,
+      delay: index * 0.1,
     },
   }),
 };
 
 export default function Features() {
+  const isMobile = useMobile();
+
   return (
     <section id="features" className="relative py-24 bg-orion-dark-bg">
       <div className="absolute inset-0 bg-gradient-to-b from-orion-dark-bg via-black/50 to-orion-dark-bg pointer-events-none" />
@@ -98,7 +100,13 @@ export default function Features() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          className={`grid ${
+            isMobile
+              ? "grid-cols-1"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          } gap-6`}
+        >
           {features.map((feature, index) => (
             <motion.div
               key={index}
@@ -107,7 +115,7 @@ export default function Features() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className={`group ${sizeClasses[feature.size]}`}
+              className={`group ${isMobile ? "col-span-1" : sizeClasses[feature.size]}`}
             >
               <div className="relative h-full p-8 bg-white/[0.03] border border-white/[0.05] rounded-2xl overflow-hidden hover:bg-white/[0.05] transition-all duration-300">
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,rgb(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255,255,255,0.05)_1px,transparent_1px)] bg-[size:24px_24px] opacity-0 group-hover:opacity-20 transition-opacity duration-300" />

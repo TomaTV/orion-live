@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ message: "Non autorisé" });
     }
 
-    // Récupérer l'utilisateur depuas la session
+    // Récupérer l'utilisateur depuis la session
     const [sessions] = await pool.query(
       "SELECT user_id FROM sessions WHERE token = ? AND expires_at > NOW()",
       [authToken]
@@ -39,7 +39,19 @@ export default async function handler(req, res) {
 
     const user = users[0];
 
-    res.status(200).json(user);
+    // Récupérer les paramètres de l'utilisateur (comme le thème)
+    const [settings] = await pool.query(
+      "SELECT theme FROM user_settings WHERE user_id = ?",
+      [userId]
+    );
+
+    // Ajouter le thème aux données utilisateur
+    const userInfo = {
+      ...user,
+      theme: settings.length > 0 ? settings[0].theme : "light", // Valeur par défaut : light
+    };
+
+    res.status(200).json(userInfo);
   } catch (error) {
     console.error("Erreur API utilisateur :", error);
     res.status(500).json({ message: "Erreur serveur" });
