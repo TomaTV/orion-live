@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Globe, LineChart, Zap } from "lucide-react";
+import Image from "next/image";
 
 const tabs = [
   {
@@ -8,21 +9,21 @@ const tabs = [
     title: "1. Connectez votre site",
     description:
       "Ajoutez votre site en quelques clics. Orion commence immédiatement à analyser vos pages pour identifier les points d'amélioration.",
-    video: "/videos/step-1.mp4",
+    video: "/img/sign-up.jpg",
   },
   {
     icon: LineChart,
     title: "2. Obtenez vos analyses",
     description:
       "Visualisez instantanément les performances, le SEO et la sécurité de votre site grâce à nos rapports détaillés et nos graphiques interactifs.",
-    video: "/videos/step-1.mp4",
+    video: "/img/performance.jpg",
   },
   {
     icon: Zap,
     title: "3. Optimisez et améliorez",
     description:
       "Suivez nos recommandations personnalisées pour améliorer votre site. Chaque suggestion est accompagnée d'un guide étape par étape.",
-    video: "/videos/step-1.mp4",
+    video: "/img/optimisez.jpg",
   },
 ];
 
@@ -62,12 +63,20 @@ export default function HowItWorks() {
                   transition={{ duration: 0.3 }}
                   className="absolute inset-0"
                 >
+                  {/* Mode pour la vidéo
                   <video
                     className="w-full h-full object-cover rounded-2xl"
                     autoPlay
                     loop
                     muted
                     src={tabs[activeTab].video}
+                  /> */}
+                  <Image
+                    className="w-full h-full object-cover rounded-2xl"
+                    width={1920}
+                    height={1080}
+                    src={tabs[activeTab].video}
+                    alt={tabs[activeTab].title}
                   />
                 </motion.div>
               </AnimatePresence>

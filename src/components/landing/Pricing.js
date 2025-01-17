@@ -6,23 +6,23 @@ const plans = [
   {
     name: "Gratuit",
     price: "0",
-    credits: "2 crédits offerts à l'inscription, pas de crédits récurrents",
+    credits: "1 crédit offert à l'inscription (valable 14 jours)",
     description:
-      "Testez Orion sans engagement. Explorez nos outils et effectuez vos premières analyses gratuitement.",
+      "Essayez Orion gratuitement pendant 14 jours. Idéal pour découvrir nos outils sans engagement.",
     features: [
       "Analyse de performance basique",
       "1 site pour les audits",
       "Recommandations simples",
     ],
-    cta: "Démarrer gratuitement",
+    cta: "Démarrer l'essai gratuit",
     popular: false,
   },
   {
     name: "Pro",
     price: "29",
-    credits: "5 crédits par mois inclus (non cumulables)",
+    credits: "10 crédits par mois inclus (non cumulables)",
     description:
-      "Accédez à des analyses avancées, optimisez votre SEO et gérez jusqu'à 5 sites pour un suivi complet.",
+      "Accédez à des analyses avancées, optimisez votre SEO et gérez jusqu'à 5 sites avec des rapports détaillés.",
     features: [
       "Analyse de performance complète",
       "Audit SEO approfondi",
@@ -35,10 +35,10 @@ const plans = [
   },
   {
     name: "Entreprise",
-    price: "99",
-    credits: "15 crédits par mois inclus (non cumulables)",
+    price: "79",
+    credits: "30 crédits par mois inclus (non cumulables)",
     description:
-      "La solution idéale pour les entreprises. Avec une analyse avancées et des rapports détaillés.",
+      "La solution parfaite pour les entreprises. Des analyses avancées, un support prioritaire et des outils exclusifs.",
     features: [
       "Tout du plan Pro, plus des fonctions avancées",
       "Analyse sécurité et accessibilité",
@@ -48,7 +48,7 @@ const plans = [
       "Rapports exclusifs de performance",
       "Téléchargement complet des rapports",
     ],
-    cta: "Contacter l'équipe",
+    cta: "Passer au plan Entreprise",
     popular: false,
   },
 ];

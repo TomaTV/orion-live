@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { LogOut, Moon, Sun, Plus } from "lucide-react";
+import { LogOut, Moon, Sun, Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 function HeaderApp() {
@@ -154,18 +154,16 @@ function HeaderApp() {
           </span>
         </div>
 
-        {/* Section droite */}
         <div className="flex items-center gap-4">
-          {/* Crédits */}
           <div className="flex items-center gap-2">
-            <div className="px-4 py-2 bg-white dark:bg-white/5 rounded-lg flex items-center shadow-sm transition-colors">
-              <span className="text-gray-700 dark:text-white text-sm font-medium transition-colors">
-                {credits} crédits
+            <div className="px-4 py-2 bg-white dark:bg-white/5 rounded-lg flex items-center justify-center shadow-sm transition-colors">
+              <span className="text-gray-700 dark:text-white text-sm font-medium transition-colors flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> {credits} crédits
               </span>
             </div>
             {/* Bouton + */}
             <Link
-              href="/pricing"
+              href="/app/pricing"
               className="p-2 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm transition-all duration-300"
             >
               <Plus

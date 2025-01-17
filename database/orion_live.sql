@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 16 jan. 2025 à 13:17
+-- Généré le : ven. 17 jan. 2025 à 10:22
 -- Version du serveur : 10.4.21-MariaDB
 -- Version de PHP : 8.0.12
 
@@ -68,6 +68,13 @@ CREATE TABLE `sessions` (
   `user_agent` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Déchargement des données de la table `sessions`
+--
+
+INSERT INTO `sessions` (`id`, `user_id`, `token`, `expires_at`, `created_at`, `ip_address`, `user_agent`) VALUES
+(37, 6, '087a5e72932662c48d24bd27f0ce3ac2e7deb03cfdd6f4391b16a4ea60282c850bff73b144ac1d16505a3bbf3c5f7f344c5b7631a3861b1e7ca5a1791b69a0ca', '2025-01-24 09:15:31', '2025-01-17 09:15:31', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0');
+
 -- --------------------------------------------------------
 
 --
@@ -94,6 +101,9 @@ CREATE TABLE `users` (
 --
 -- Déchargement des données de la table `users`
 --
+
+INSERT INTO `users` (`id`, `email`, `password`, `created_at`, `last_login`, `failed_attempts`, `lock_until`, `credits`, `last_ip`, `last_user_agent`, `deleted_at`, `updated_at`, `created_ip`, `created_user_agent`) VALUES
+(6, 'tmoaspro@gmail.com', '$2a$12$25M2u8IalU8RN.WIM.DvpeFk6u.R3lYRKww07jeS2Xa./bFBr3ugi', '2025-01-16 12:04:50', '2025-01-17 09:15:31', 0, NULL, 99, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', NULL, '2025-01-17 09:15:31', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0');
 
 --
 -- Index pour les tables déchargées
@@ -152,7 +162,7 @@ ALTER TABLE `profiles`
 -- AUTO_INCREMENT pour la table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT pour la table `users`

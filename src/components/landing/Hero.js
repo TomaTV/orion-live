@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Chart from "../ui/Chart";
 import { Sparkles, ChevronDown, WandSparkles } from "lucide-react";
@@ -7,6 +8,11 @@ import useMobile from "../hooks/useMobile";
 
 export default function Hero() {
   const isMobile = useMobile();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleHeroClick = (e, target) => {
     e.preventDefault();
@@ -16,7 +22,7 @@ export default function Hero() {
   return (
     <div className="relative w-full min-h-[100svh] flex flex-col items-center justify-center -mt-20">
       {/* Chart en arrière-plan */}
-      {!isMobile && <Chart />}
+      {isClient && !isMobile && <Chart />}
 
       {/* Gradient overlay amélioré */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg opacity-90" />
@@ -29,7 +35,7 @@ export default function Hero() {
         className="relative z-10 mx-auto px-4 sm:px-6 text-center max-w-7xl"
       >
         <motion.h1
-          className="font-inter font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.1] bg-clip-text text-transparent mb-4 md:mb-6"
+          className="font-inter font-bold text-4xl sm:text-5xl md:text-6xl lg:text-[6.5rem] tracking-tight leading-[1.1] bg-clip-text text-transparent mb-4 md:mb-6"
           style={{
             backgroundImage:
               "linear-gradient(160deg, #FFFFFF 0%, rgba(255, 255, 255, 0.95) 25%, rgba(255, 255, 255, 0.85) 50%, rgba(113, 113, 122, 0.9) 75%, #71717A 100%)",

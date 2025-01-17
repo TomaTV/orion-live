@@ -6,32 +6,43 @@ const faqs = [
   {
     question: "Comment Orion peut-il améliorer les performances de mon site ?",
     answer:
-      "Orion analyse la vitesse de votre site et vous propose des recommandations pour optimiser la gestion des images, la mise en cache et la minification du code.",
+      "Orion analyse la vitesse de votre site, détecte les points de ralentissement et fournit des recommandations pour améliorer la gestion des images, la mise en cache et la minification du code.",
   },
   {
     question: "Quelles sont les fonctionnalités de sécurité proposées ?",
     answer:
-      "Orion détecte les vulnérabilités, les tentatives d'intrusion et les attaques DDoS, et propose des actions pour renforcer la sécurité de votre site.",
+      "Orion analyse les vulnérabilités de votre site, vous alerte sur les tentatives d'intrusion et propose des recommandations pour renforcer la sécurité de vos pages.",
   },
   {
     question: "Comment fonctionne l'optimisation SEO d'Orion ?",
     answer:
-      "Orion évalue vos contenus, la structure de votre site et vos backlinks pour fournir des recommandations détaillées et vous alerter en cas de changement significatif.",
+      "Orion analyse les contenus, la structure et les backlinks de votre site pour fournir des recommandations détaillées sur les meilleures pratiques SEO, afin d'améliorer votre visibilité sur les moteurs de recherche.",
   },
   {
     question: "Puis-je essayer Orion gratuitement ?",
     answer:
-      "Oui, vous bénéficiez de 2 crédits gratuits à l'inscription pour tester nos outils sans engagement. Vous pouvez découvrir les fonctionnalités de base d'Orion sans frais.",
+      "Oui, avec le plan Gratuit, vous bénéficiez de 1 crédit offert à l'inscription, ce qui vous permet de tester certaines fonctionnalités de base d'Orion pendant 14 jours, sans engagement.",
   },
   {
     question: "Est-il possible de changer de plan à tout moment ?",
     answer:
-      "Oui, vous pouvez changer de plan à tout moment. Les modifications sont appliquées immédiatement et la facturation est ajustée en fonction de votre nouveau plan.",
+      "Oui, vous pouvez passer d'un plan à un autre à tout moment. Les changements sont appliqués immédiatement, et la facturation est ajustée en fonction de votre nouveau plan.",
   },
   {
     question: "Puis-je télécharger les rapports d'analyse ?",
     answer:
-      "Oui, le téléchargement des rapports est inclus dans les plans Pro et Entreprise pour faciliter le suivi et l'archivage de vos analyses.",
+      "Oui, le téléchargement des rapports d'analyse est inclus dans les plans Pro et Entreprise. Vous pouvez ainsi exporter vos rapports complets pour les archiver ou les partager.",
+  },
+  {
+    question:
+      "Que faire si j'ai besoin de plus de crédits que ceux inclus dans mon plan ?",
+    answer:
+      "Si vous avez besoin de plus de crédits, vous pouvez acheter des packs supplémentaires. Les crédits non utilisés ne sont pas cumulables d'un mois sur l'autre, mais vous pouvez ajuster vos achats en fonction de vos besoins.",
+  },
+  {
+    question: "Les crédits sont-ils valables toute l'année ?",
+    answer:
+      "Non, les crédits sont valables uniquement pour le mois en cours. Ils ne sont pas transférables au mois suivant, sauf si vous bénéficiez de crédits supplémentaires via des packs personnalisés.",
   },
 ];
 
