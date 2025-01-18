@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : sam. 18 jan. 2025 à 01:40
--- Version du serveur : 10.4.21-MariaDB
--- Version de PHP : 8.0.12
+-- Généré le : sam. 18 jan. 2025 à 18:52
+-- Version du serveur : 10.4.32-MariaDB
+-- Version de PHP : 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -33,7 +33,7 @@ CREATE TABLE `password_resets` (
   `token` varchar(255) NOT NULL,
   `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -50,7 +50,24 @@ CREATE TABLE `profiles` (
   `bio` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `security_logs`
+--
+
+CREATE TABLE `security_logs` (
+  `id` bigint(20) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `status` varchar(50) NOT NULL,
+  `error` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -66,14 +83,7 @@ CREATE TABLE `sessions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `ip_address` varchar(45) DEFAULT NULL,
   `user_agent` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Déchargement des données de la table `sessions`
---
-
-INSERT INTO `sessions` (`id`, `user_id`, `token`, `expires_at`, `created_at`, `ip_address`, `user_agent`) VALUES
-(56, 6, '4beeb357d264470ccfaeda317db558c942f024a05980df5e277a52c8228b6c0cd313f1ab8cda5e6f528e0493ef2de9f4a9f892c2c2bf78d239b833a6f7820b75', '2025-01-25 00:23:34', '2025-01-18 00:23:34', '::1', 'node');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -85,30 +95,34 @@ CREATE TABLE `users` (
   `id` bigint(20) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) DEFAULT NULL,
+  `google_id` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `last_login` timestamp NULL DEFAULT NULL,
   `failed_attempts` int(11) DEFAULT 0,
   `lock_until` timestamp NULL DEFAULT NULL,
   `credits` int(11) DEFAULT 0,
-  `rank` enum('free','pro','enterprise') NOT NULL DEFAULT 'free',
-  `rank_updated_at` timestamp NULL DEFAULT NULL,
+  `rank` enum('free','pro','enterprise','admin') DEFAULT 'free',
   `last_ip` varchar(45) DEFAULT NULL,
   `last_user_agent` text DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   `created_ip` varchar(45) DEFAULT NULL,
-  `created_user_agent` text DEFAULT NULL,
-  `google_id` varchar(255) DEFAULT NULL,
-  `last_failed_login` timestamp NULL DEFAULT NULL,
-  `last_successful_login` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `created_user_agent` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
--- Déchargement des données de la table `users`
+-- Structure de la table `user_settings`
 --
 
-INSERT INTO `users` (`id`, `email`, `password`, `created_at`, `last_login`, `failed_attempts`, `lock_until`, `credits`, `rank`, `rank_updated_at`, `last_ip`, `last_user_agent`, `deleted_at`, `updated_at`, `created_ip`, `created_user_agent`, `google_id`, `last_failed_login`, `last_successful_login`) VALUES
-(6, 'tmoaspro@gmail.com', '$2a$12$yOjS2qu2Ln7rnFy3lOcDGOxt2DO93T4.QqVYIN7ZlZ8yYugfnKcWC', '2025-01-16 12:04:50', '2025-01-18 00:23:34', 0, NULL, 99, 'free', NULL, '::1', 'node', NULL, '2025-01-18 00:28:14', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', NULL, NULL, NULL);
+CREATE TABLE `user_settings` (
+  `id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `theme` varchar(10) DEFAULT 'dark',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Index pour les tables déchargées
@@ -131,6 +145,14 @@ ALTER TABLE `profiles`
   ADD UNIQUE KEY `user_id` (`user_id`);
 
 --
+-- Index pour la table `security_logs`
+--
+ALTER TABLE `security_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_email_type` (`email`,`type`);
+
+--
 -- Index pour la table `sessions`
 --
 ALTER TABLE `sessions`
@@ -145,9 +167,15 @@ ALTER TABLE `sessions`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `google_id` (`google_id`),
   ADD UNIQUE KEY `idx_google_id` (`google_id`),
   ADD KEY `idx_email` (`email`);
+
+--
+-- Index pour la table `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`user_id`);
 
 --
 -- AUTO_INCREMENT pour les tables déchargées
@@ -157,25 +185,37 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `profiles`
 --
 ALTER TABLE `profiles`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+
+--
+-- AUTO_INCREMENT pour la table `security_logs`
+--
+ALTER TABLE `security_logs`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT pour la table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+
+--
+-- AUTO_INCREMENT pour la table `user_settings`
+--
+ALTER TABLE `user_settings`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- Contraintes pour les tables déchargées
@@ -198,6 +238,12 @@ ALTER TABLE `profiles`
 --
 ALTER TABLE `sessions`
   ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Contraintes pour la table `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD CONSTRAINT `user_settings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

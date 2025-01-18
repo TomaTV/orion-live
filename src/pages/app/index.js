@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import HeaderApp from "@/components/app/Header";
+import AdminOnly from "@/components/hooks/AdminOnly";
 
 function AppPage() {
   const router = useRouter(); // On définit le router ici
@@ -22,6 +23,13 @@ function AppPage() {
   return (
     <div className="min-h-screen bg-orion-dark-bg">
       <HeaderApp />
+      <AdminOnly>
+        {/* Contenu visible uniquement par les admins */}
+        <div>
+          <h2>Administration</h2>
+          {/* ... */}
+        </div>
+      </AdminOnly>
     </div>
   );
 }

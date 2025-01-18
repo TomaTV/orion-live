@@ -15,8 +15,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // Récupération de l'IP pour le rate limiting
-  const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  // Récupération de l'IP et user agent
+  const clientIp =
+    req.headers["x-forwarded-for"] || req.socket.remoteAddress || "::1";
+  const userAgent =
+    req.headers["x-user-agent"] || req.headers["user-agent"] || "unknown";
 
   try {
     // Vérification du rate limit
@@ -44,12 +47,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Log de tentative de connexion
-    await pool.query(
+    // Création du log de sécurité
+    const [insertLog] = await pool.query(
       `INSERT INTO security_logs (type, email, ip_address, user_agent, status)
        VALUES (?, ?, ?, ?, ?)`,
-      ["LOGIN_ATTEMPT", email, clientIp, req.headers["user-agent"], "PENDING"]
+      ["LOGIN_ATTEMPT", email, clientIp, userAgent, "PENDING"]
     );
+    const logId = insertLog.insertId;
 
     const [users] = await pool.query(
       "SELECT * FROM users WHERE email = ? AND deleted_at IS NULL",
@@ -66,10 +70,10 @@ export default async function handler(req, res) {
     }
 
     if (!user) {
-      await pool.query(
-        "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-        ["FAILED_NOT_FOUND", email, "LOGIN_ATTEMPT"]
-      );
+      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+        "FAILED_NOT_FOUND",
+        logId,
+      ]);
       return res.status(401).json({
         message: "Email ou mot de passe incorrect",
       });
@@ -105,34 +109,79 @@ export default async function handler(req, res) {
     const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
-      await pool.query(
-        "UPDATE users SET failed_attempts = failed_attempts + 1 WHERE email = ?",
-        [email]
-      );
+      // Transaction pour la gestion des tentatives
+      await pool.query("START TRANSACTION");
 
-      // Vérification du nombre de tentatives
-      if (user.failed_attempts + 1 >= 5) {
-        await pool.query(
-          "UPDATE users SET lock_until = DATE_ADD(NOW(), INTERVAL 30 MINUTE) WHERE email = ?",
+      try {
+        // Récupérer le nombre actuel de tentatives avec verrou
+        const [currentUser] = await pool.query(
+          "SELECT failed_attempts, lock_until FROM users WHERE email = ? FOR UPDATE",
           [email]
         );
-        await pool.query(
-          "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-          ["FAILED_MAX_ATTEMPTS", email, "LOGIN_ATTEMPT"]
-        );
-        return res.status(403).json({
-          message: "Trop de tentatives. Compte verrouillé pour 30 minutes.",
-        });
-      }
 
-      await pool.query(
-        "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-        ["FAILED_INVALID_PASSWORD", email, "LOGIN_ATTEMPT"]
-      );
-      return res.status(401).json({
-        message: "Email ou mot de passe incorrect",
-        attemptsLeft: 5 - (user.failed_attempts + 1),
-      });
+        const newFailedAttempts = (currentUser[0]?.failed_attempts || 0) + 1;
+
+        // Mise à jour des tentatives
+        await pool.query(
+          "UPDATE users SET failed_attempts = ? WHERE email = ?",
+          [newFailedAttempts, email]
+        );
+
+        // Si 5 tentatives atteintes, verrouiller le compte
+        if (newFailedAttempts >= 5) {
+          // Verrouiller le compte
+          await pool.query(
+            "UPDATE users SET lock_until = DATE_ADD(NOW(), INTERVAL 30 MINUTE) WHERE email = ?",
+            [email]
+          );
+
+          // Créer un nouveau log pour le blocage du compte
+          const [blockLog] = await pool.query(
+            `INSERT INTO security_logs (type, email, ip_address, user_agent, status)
+             VALUES (?, ?, ?, ?, ?)`,
+            ["BLOCK_ACCOUNT", email, clientIp, userAgent, "SUCCESS"]
+          );
+
+          await pool.query("COMMIT");
+
+          // Mettre à jour le log de tentative de connexion
+          await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+            "FAILED_MAX_ATTEMPTS",
+            logId,
+          ]);
+
+          return res.status(403).json({
+            message:
+              "Compte bloqué pendant 30 minutes suite à trop de tentatives échouées.",
+            locked: true,
+            lockDuration: 30,
+          });
+        }
+
+        await pool.query("COMMIT");
+
+        // Mettre à jour le log de tentative
+        await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+          "FAILED_INVALID_PASSWORD",
+          logId,
+        ]);
+
+        // Message spécifique pour la dernière tentative
+        if (newFailedAttempts === 4) {
+          return res.status(401).json({
+            message: "ATTENTION : Dernière tentative avant blocage du compte !",
+            attemptsLeft: 1,
+          });
+        }
+
+        return res.status(401).json({
+          message: `Email ou mot de passe incorrect. Il vous reste ${5 - newFailedAttempts} tentatives.`,
+          attemptsLeft: 5 - newFailedAttempts,
+        });
+      } catch (error) {
+        await pool.query("ROLLBACK");
+        throw error;
+      }
     }
 
     // Génération du token de session
@@ -154,10 +203,10 @@ export default async function handler(req, res) {
       );
     } catch (error) {
       console.error("Erreur lors de l'insertion de la session:", error);
-      await pool.query(
-        "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-        ["FAILED_SESSION_CREATE", email, "LOGIN_ATTEMPT"]
-      );
+      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+        "FAILED_SESSION_CREATE",
+        logId,
+      ]);
       return res.status(500).json({
         message: "Erreur lors de la création de la session",
       });
@@ -172,7 +221,7 @@ export default async function handler(req, res) {
            last_ip = ?,
            last_user_agent = ?
        WHERE email = ?`,
-      [clientIp, req.headers["user-agent"], email]
+      [clientIp, userAgent, email]
     );
 
     // Configuration du cookie
@@ -183,10 +232,16 @@ export default async function handler(req, res) {
     );
 
     // Log du succès de la connexion
-    await pool.query(
-      "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-      ["SUCCESS", email, "LOGIN_ATTEMPT"]
-    );
+    await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+      "SUCCESS",
+      logId,
+    ]);
+
+    // Mise à jour du log en succès AVANT de renvoyer la réponse
+    await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+      "SUCCESS",
+      logId,
+    ]);
 
     res.status(200).json({
       message: "Connexion réussie",
@@ -198,10 +253,13 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error("Login error:", error);
-    await pool.query(
-      "UPDATE security_logs SET status = ?, error = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-      ["FAILED_SERVER_ERROR", error.message, email, "LOGIN_ATTEMPT"]
-    );
+    // Si on a un logId, on l'utilise pour mettre à jour le log
+    if (logId) {
+      await pool.query(
+        "UPDATE security_logs SET status = ?, error = ? WHERE id = ?",
+        ["FAILED_SERVER_ERROR", error.message, logId]
+      );
+    }
     res.status(500).json({ message: "Erreur lors de la connexion" });
   }
 }

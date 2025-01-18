@@ -39,23 +39,50 @@ export default function Footer() {
             Politique de remboursement
           </Link>
           <Link
-            href="mailto:support@orion.com" // Remplacez par votre adresse email contact
+            href="mailto:support@orion.com"
             className="text-gray-400 hover:text-indigo-500 transition duration-300 text-sm"
           >
             Support
           </Link>
         </div>
 
-        {/* Section personnalisée (droite) */}
-        <div className="flex items-center space-x-2 ml-auto">
+        {/* Section des logos de paiement (droite) */}
+        <div className="flex items-center space-x-4 ml-auto">
           <p className="text-gray-400 text-sm">Paiements sécurisés avec</p>
-          <Link
-            href="https://stripe.com"
-            target="_blank"
-            className="text-indigo-500 hover:text-white transition duration-300 text-sm"
-          >
-            Stripe
-          </Link>
+          <div className="flex space-x-3">
+            <Link href="https://www.stripe.com" target="_blank">
+              <Image
+                src="/img/buy/stripe.svg" // Assure-toi de télécharger ces images dans le dossier public/images
+                alt="Stripe"
+                width={40}
+                height={40}
+              />
+            </Link>
+            <Link href="https://www.paypal.com" target="_blank">
+              <Image
+                src="/img/buy/paypal.svg" // Assure-toi de télécharger ces images dans le dossier public/images
+                alt="PayPal"
+                width={40}
+                height={40}
+              />
+            </Link>
+            <Link href="https://www.visa.com" target="_blank">
+              <Image
+                src="/img/buy/visa.svg"
+                alt="Visa"
+                width={40}
+                height={40}
+              />
+            </Link>
+            <Link href="https://www.mastercard.com" target="_blank">
+              <Image
+                src="/img/buy/mastercard.svg"
+                alt="MasterCard"
+                width={40}
+                height={40}
+              />
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

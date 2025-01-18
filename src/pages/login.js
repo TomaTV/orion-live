@@ -49,16 +49,19 @@ export default function Login() {
     setErrors({ ...errors, general: "" });
 
     try {
+      const userAgent = window.navigator.userAgent;
+
       const result = await signIn("credentials", {
         email: credentials.email,
         password: credentials.password,
-        redirect: false
+        userAgent: userAgent,
+        redirect: false,
       });
 
       if (result?.error) {
         setErrors({
           ...errors,
-          general: "Email ou mot de passe incorrect"
+          general: result.error,
         });
       } else {
         localStorage.setItem("isAuthenticated", "true");
@@ -67,7 +70,7 @@ export default function Login() {
     } catch (error) {
       setErrors({
         ...errors,
-        general: "Une erreur est survenue lors de la connexion"
+        general: "Une erreur est survenue lors de la connexion",
       });
     } finally {
       setIsLoading(false);
@@ -79,13 +82,23 @@ export default function Login() {
     setErrors({ ...errors, general: "" });
 
     try {
+      // Stocker les infos client avant la redirection Google
+      await fetch("/api/auth/store-google-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userAgent: window.navigator.userAgent,
+          // L'IP sera capturée côté serveur
+        }),
+      });
+
       await signIn("google", {
         callbackUrl: `${window.location.origin}/app`,
       });
     } catch (error) {
       setErrors({
         ...errors,
-        general: "Une erreur est survenue avec Google"
+        general: "Une erreur est survenue avec Google",
       });
     } finally {
       setGoogleLoading(false);
@@ -122,6 +135,14 @@ export default function Login() {
             <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
               <p className="text-sm text-green-400">
                 Compte créé avec succès ! Vous pouvez maintenant vous connecter.
+              </p>
+            </div>
+          )}
+
+          {router.query.message && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <p className="text-sm text-green-400">
+                {decodeURIComponent(router.query.message)}
               </p>
             </div>
           )}
