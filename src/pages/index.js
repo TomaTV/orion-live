@@ -1,11 +1,17 @@
+// Import React
 import { useEffect, useState } from "react";
+import Image from "next/image";
+
+// Import composants
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
 import Pricing from "@/components/landing/Pricing";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Faq from "@/components/landing/FAQ";
-import Image from "next/image";
+import Footer from "@/components/landing/Footer";
+
+// Import hooks
 import { useSmoothScroll } from "@/components/hooks/useSmoothScroll";
 import useMobile from "@/components/hooks/useMobile"; // Import du hook
 
@@ -48,6 +54,7 @@ export default function Home() {
       <HowItWorks />
       <Pricing />
       <Faq />
+      <Footer />
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { validateEmail } from "@/lib/validation";
 // Configuration du rate limiter
 const limiter = rateLimit({
   interval: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5
+  maxRequests: 5,
 });
 
 export default async function handler(req, res) {
@@ -23,8 +23,9 @@ export default async function handler(req, res) {
     try {
       await limiter.check(clientIp);
     } catch (error) {
-      return res.status(429).json({ 
-        message: "Trop de tentatives de connexion. Veuillez réessayer plus tard." 
+      return res.status(429).json({
+        message:
+          "Trop de tentatives de connexion. Veuillez réessayer plus tard.",
       });
     }
 
@@ -32,14 +33,14 @@ export default async function handler(req, res) {
 
     // Validation améliorée de l'email
     if (!email || !password) {
-      return res.status(400).json({ 
-        message: "Email et mot de passe requis." 
+      return res.status(400).json({
+        message: "Email et mot de passe requis.",
       });
     }
 
     if (!validateEmail(email)) {
-      return res.status(400).json({ 
-        message: "Format d'email invalide." 
+      return res.status(400).json({
+        message: "Format d'email invalide.",
       });
     }
 
@@ -47,22 +48,43 @@ export default async function handler(req, res) {
     await pool.query(
       `INSERT INTO security_logs (type, email, ip_address, user_agent, status)
        VALUES (?, ?, ?, ?, ?)`,
-      ['LOGIN_ATTEMPT', email, clientIp, req.headers["user-agent"], 'PENDING']
+      ["LOGIN_ATTEMPT", email, clientIp, req.headers["user-agent"], "PENDING"]
     );
 
     const [users] = await pool.query(
-      "SELECT * FROM users WHERE email = ? AND deleted_at IS NULL", 
+      "SELECT * FROM users WHERE email = ? AND deleted_at IS NULL",
       [email]
     );
+
     const user = users[0];
+
+    if (users[0]?.google_id) {
+      return res.status(400).json({
+        message:
+          "Ce compte utilise Google. Veuillez vous connecter avec Google.",
+      });
+    }
 
     if (!user) {
       await pool.query(
         "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-        ['FAILED_NOT_FOUND', email, 'LOGIN_ATTEMPT']
+        ["FAILED_NOT_FOUND", email, "LOGIN_ATTEMPT"]
       );
-      return res.status(401).json({ 
-        message: "Email ou mot de passe incorrect" 
+      return res.status(401).json({
+        message: "Email ou mot de passe incorrect",
+      });
+    }
+
+    // Vérification si c'est un compte Google
+    if (user.google_id) {
+      await pool.query(
+        "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
+        ["FAILED_GOOGLE_ACCOUNT", email, "LOGIN_ATTEMPT"]
+      );
+      return res.status(400).json({
+        message:
+          "Ce compte utilise la connexion Google. Veuillez vous connecter avec Google.",
+        isGoogleAccount: true,
       });
     }
 
@@ -72,10 +94,10 @@ export default async function handler(req, res) {
       const lockTime = Math.ceil((new Date(user.lock_until) - now) / 1000 / 60);
       await pool.query(
         "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-        ['FAILED_LOCKED', email, 'LOGIN_ATTEMPT']
+        ["FAILED_LOCKED", email, "LOGIN_ATTEMPT"]
       );
       return res.status(403).json({
-        message: `Compte temporairement verrouillé. Réessayez dans ${lockTime} minutes.`
+        message: `Compte temporairement verrouillé. Réessayez dans ${lockTime} minutes.`,
       });
     }
 
@@ -96,20 +118,20 @@ export default async function handler(req, res) {
         );
         await pool.query(
           "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-          ['FAILED_MAX_ATTEMPTS', email, 'LOGIN_ATTEMPT']
+          ["FAILED_MAX_ATTEMPTS", email, "LOGIN_ATTEMPT"]
         );
         return res.status(403).json({
-          message: "Trop de tentatives. Compte verrouillé pour 30 minutes."
+          message: "Trop de tentatives. Compte verrouillé pour 30 minutes.",
         });
       }
 
       await pool.query(
         "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-        ['FAILED_INVALID_PASSWORD', email, 'LOGIN_ATTEMPT']
+        ["FAILED_INVALID_PASSWORD", email, "LOGIN_ATTEMPT"]
       );
       return res.status(401).json({
         message: "Email ou mot de passe incorrect",
-        attemptsLeft: 5 - (user.failed_attempts + 1)
+        attemptsLeft: 5 - (user.failed_attempts + 1),
       });
     }
 
@@ -134,10 +156,10 @@ export default async function handler(req, res) {
       console.error("Erreur lors de l'insertion de la session:", error);
       await pool.query(
         "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-        ['FAILED_SESSION_CREATE', email, 'LOGIN_ATTEMPT']
+        ["FAILED_SESSION_CREATE", email, "LOGIN_ATTEMPT"]
       );
       return res.status(500).json({
-        message: "Erreur lors de la création de la session"
+        message: "Erreur lors de la création de la session",
       });
     }
 
@@ -163,7 +185,7 @@ export default async function handler(req, res) {
     // Log du succès de la connexion
     await pool.query(
       "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-      ['SUCCESS', email, 'LOGIN_ATTEMPT']
+      ["SUCCESS", email, "LOGIN_ATTEMPT"]
     );
 
     res.status(200).json({
@@ -178,7 +200,7 @@ export default async function handler(req, res) {
     console.error("Login error:", error);
     await pool.query(
       "UPDATE security_logs SET status = ?, error = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-      ['FAILED_SERVER_ERROR', error.message, email, 'LOGIN_ATTEMPT']
+      ["FAILED_SERVER_ERROR", error.message, email, "LOGIN_ATTEMPT"]
     );
     res.status(500).json({ message: "Erreur lors de la connexion" });
   }

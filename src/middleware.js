@@ -1,27 +1,30 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import { getToken } from "next-auth/jwt";
 
-export function middleware(request) {
-  const isAuthenticated = request.cookies.get("auth");
-  const pathname = request.nextUrl.pathname;
+export async function middleware(req) {
+  const { pathname } = req.nextUrl;
 
-  // Si l'utilisateur essaye d'accéder à /app/* sans être authentifié
-  if (pathname.startsWith("/app") && !isAuthenticated) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Protection des routes /app
+  if (pathname.startsWith("/app")) {
+    const token = await getToken({ req });
+    if (!token) {
+      const loginUrl = new URL("/login", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
-  // Si l'utilisateur est sur /login et est authentifié
-  // Ajouter une vérification pour éviter la redirection si on vient de /app/pricing
-  if (
-    pathname === "/login" &&
-    isAuthenticated &&
-    !request.headers.get("referer")?.includes("/app/")
-  ) {
-    return NextResponse.redirect(new URL("/app", request.url));
-  }
+  // Ajouter l'IP réelle aux headers
+  const ip = req.headers.get('x-forwarded-for') || 
+             req.headers.get('x-real-ip') || 
+             req.ip || 
+             'unknown';
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set('x-real-ip', ip);
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/app/:path*", "/login"],
+  matcher: ['/app/:path*', '/api/auth/:path*']
 };

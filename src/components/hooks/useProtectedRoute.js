@@ -1,40 +1,19 @@
-import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function useProtectedRoute() {
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Vérifier si l'utilisateur est authentifié via l'API
-        const response = await fetch("/api/users/info");
+    if (status === "unauthenticated" && router.pathname.startsWith('/app')) {
+      router.push('/login');
+    }
+    if (status === "authenticated" && router.pathname === '/login') {
+      router.push('/app');
+    }
+  }, [status, router]);
 
-        if (response.ok) {
-          localStorage.setItem("isAuthenticated", "true");
-          if (router.pathname === "/login") {
-            router.push("/app");
-          }
-        } else {
-          localStorage.removeItem("isAuthenticated");
-          if (!router.pathname.includes("/login")) {
-            router.push("/login");
-          }
-        }
-      } catch (error) {
-        console.error("Erreur de vérification d'authentification:", error);
-        localStorage.removeItem("isAuthenticated");
-        if (!router.pathname.includes("/login")) {
-          router.push("/login");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  return { isLoading };
+  return { isLoading: status === "loading", session };
 }

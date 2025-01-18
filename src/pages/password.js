@@ -9,19 +9,20 @@ export default function ForgotPassword() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleAccount, setIsGoogleAccount] = useState(false);
 
   const validateEmail = () => {
-    if (!email.trim()) return "L'email est requis"; // Vérifie si le champ est vide
+    if (!email.trim()) return "L'email est requis";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return "Format d'email invalide";
-    return ""; // Pas d'erreur
+    return "";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation de l'email avant de continuer
     const emailError = validateEmail();
     if (emailError) {
       setError(emailError);
@@ -30,6 +31,8 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     setError("");
+    setSuccess("");
+    setIsGoogleAccount(false);
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
@@ -41,15 +44,19 @@ export default function ForgotPassword() {
       const data = await res.json();
 
       if (res.ok) {
-        // Succès : redirection
         localStorage.setItem("resetEmail", email);
-        router.push("/password-reset");
+        setSuccess(data.message);
+        if (!data.isGoogleAccount) {
+          setTimeout(() => {
+            router.push("/password-reset");
+          }, 2000);
+        }
+      } else if (data.isGoogleAccount) {
+        setIsGoogleAccount(true);
       } else {
-        // Échec : afficher l'erreur retournée par l'API
-        setError(data.error || "Une erreur est survenue");
+        setError(data.message || "Une erreur est survenue");
       }
     } catch (error) {
-      // Gestion des erreurs réseau
       console.error("Erreur réseau:", error);
       setError("Une erreur est survenue. Veuillez réessayer.");
     } finally {
@@ -92,50 +99,73 @@ export default function ForgotPassword() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                autoComplete="email"
-                className={`w-full px-4 py-3 rounded-lg bg-black/30 border text-white placeholder-gray-500 transition-all duration-200 outline-none ${
-                  error
-                    ? "border-red-500/50 focus:ring-2 focus:ring-red-500/50"
-                    : "border-white/10 focus:ring-2 focus:ring-orion-nebula focus:border-transparent"
-                }`}
-                placeholder="vous@exemple.com"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (error) setError("");
-                }}
-              />
+          {success && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm">
+              {success}
             </div>
+          )}
 
-            <div className="relative overflow-hidden rounded-full">
-              <motion.button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex items-center justify-center gap-2 px-8 py-4 text-white border-t border-l border-r border-white/20 rounded-full transition-all duration-300 hover:bg-black/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="absolute bottom-0 left-0 right-0 h-[2px]">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orion-nebula/40 to-transparent" />
+          {isGoogleAccount ? (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="p-3 bg-red-500/10 rounded-full">
+                  <AlertCircle className="w-6 h-6 text-red-400" />
                 </div>
-
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orion-nebula to-transparent" />
+                <div>
+                  <h3 className="text-red-400 font-semibold mb-1">
+                    Compte Google détecté
+                  </h3>
+                  <p className="text-gray-300 mb-4">
+                    Ce compte utilise la connexion Google. Vous ne pouvez pas
+                    réinitialiser le mot de passe.
+                  </p>
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center justify-center w-full px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
+                  >
+                    Retourner à la connexion
+                  </Link>
                 </div>
-
-                {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <span>Envoyer le lien de réinitialisation</span>
-                )}
-              </motion.button>
+              </div>
             </div>
-          </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  autoComplete="email"
+                  className={`w-full px-4 py-3 rounded-lg bg-black/30 border text-white placeholder-gray-500 transition-all duration-200 outline-none ${
+                    error
+                      ? "border-red-500/50 focus:ring-2 focus:ring-red-500/50"
+                      : "border-white/10 focus:ring-2 focus:ring-orion-nebula focus:border-transparent"
+                  }`}
+                  placeholder="vous@exemple.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError("");
+                  }}
+                />
+              </div>
+
+              <div className="relative overflow-hidden rounded-lg">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex items-center justify-center gap-2 py-3 text-white bg-orion-nebula hover:bg-orion-nebula/90 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    "Réinitialiser le mot de passe"
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
 
           <div className="mt-6 text-center">
             <p className="text-gray-400">

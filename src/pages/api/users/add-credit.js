@@ -1,4 +1,6 @@
-import pool from "../../../lib/db";
+import pool from "@/lib/db";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -6,41 +8,68 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, amount } = req.body;
+    const { amount = 1 } = req.body;
+    let userId = null;
 
-    // Validation des entrées
-    if (!email || !amount || isNaN(amount) || amount <= 0) {
-      return res.status(400).json({ message: "Email ou montant invalide." });
+    // Vérifie d'abord la session NextAuth
+    const session = await getServerSession(req, res, authOptions);
+    if (session?.user?.email) {
+      const [users] = await pool.query(
+        "SELECT id FROM users WHERE email = ?",
+        [session.user.email]
+      );
+      if (users.length > 0) {
+        userId = users[0].id;
+      }
     }
 
-    // Vérifier si l'utilisateur existe
-    const [users] = await pool.query("SELECT * FROM users WHERE email = ?", [
-      email,
-    ]);
+    // Si pas de session NextAuth, essaie la méthode traditionnelle
+    if (!userId) {
+      const [sessions] = await pool.query(
+        "SELECT user_id FROM sessions WHERE token = ?",
+        [req.cookies.auth]
+      );
+      
+      if (sessions.length > 0) {
+        userId = sessions[0].user_id;
+      }
+    }
 
-    const user = users[0];
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé." });
+    // Si aucune authentification n'est valide
+    if (!userId) {
+      return res.status(401).json({ message: "Non autorisé" });
     }
 
     // Ajouter les crédits
-    await pool.query("UPDATE users SET credit = credit + ? WHERE email = ?", [
-      amount,
-      email,
-    ]);
+    await pool.query(
+      `UPDATE users 
+       SET credits = credits + ?, 
+           updated_at = NOW() 
+       WHERE id = ?`,
+      [amount, userId]
+    );
 
-    // Retourner la réponse avec les crédits mis à jour
-    const [updatedUser] = await pool.query(
-      "SELECT credit FROM users WHERE email = ?",
-      [email]
+    // Log de la transaction
+    await pool.query(
+      `INSERT INTO credit_transactions 
+       (user_id, amount, type, created_at) 
+       VALUES (?, ?, 'ADD', NOW())`,
+      [userId, amount]
+    );
+
+    // Récupérer le nouveau solde
+    const [users] = await pool.query(
+      "SELECT credits FROM users WHERE id = ?",
+      [userId]
     );
 
     res.status(200).json({
-      message: "Crédits ajoutés avec succès.",
-      credit: updatedUser[0].credit,
+      message: "Crédits ajoutés avec succès",
+      newBalance: users[0].credits
     });
+
   } catch (error) {
-    console.error("Error adding credit:", error);
-    res.status(500).json({ message: "Erreur lors de l'ajout des crédits." });
+    console.error("Erreur lors de l'ajout des crédits:", error);
+    res.status(500).json({ message: "Erreur lors de l'ajout des crédits" });
   }
 }

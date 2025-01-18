@@ -6,7 +6,7 @@ import { validatePassword } from "@/lib/security";
 
 const limiter = rateLimit({
   interval: 60 * 60 * 1000, // 1 heure
-  maxRequests: 5 // 5 tentatives par heure
+  maxRequests: 5, // 5 tentatives par heure
 });
 
 export default async function handler(req, res) {
@@ -21,9 +21,10 @@ export default async function handler(req, res) {
     try {
       await limiter.check(clientIp);
     } catch (error) {
-      return res.status(429).json({ 
-        message: "Trop de tentatives d'inscription. Veuillez réessayer plus tard.",
-        code: "RATE_LIMIT_EXCEEDED"
+      return res.status(429).json({
+        message:
+          "Trop de tentatives d'inscription. Veuillez réessayer plus tard.",
+        code: "RATE_LIMIT_EXCEEDED",
       });
     }
 
@@ -31,27 +32,27 @@ export default async function handler(req, res) {
 
     // Validation email
     if (!email || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Email et mot de passe requis",
-        code: "MISSING_FIELDS"
+        code: "MISSING_FIELDS",
       });
     }
 
     if (!validateEmail(email)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Format d'email invalide",
-        code: "INVALID_EMAIL"
+        code: "INVALID_EMAIL",
       });
     }
 
     // Validation du mot de passe
     const passwordCheck = validatePassword(password);
     if (!passwordCheck.isValid) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Le mot de passe ne respecte pas les critères de sécurité",
         errors: passwordCheck.errors,
         strength: passwordCheck.strength,
-        code: "INVALID_PASSWORD"
+        code: "INVALID_PASSWORD",
       });
     }
 
@@ -59,34 +60,52 @@ export default async function handler(req, res) {
     await pool.query(
       `INSERT INTO security_logs (type, email, ip_address, user_agent, status)
        VALUES (?, ?, ?, ?, ?)`,
-      ['REGISTER_ATTEMPT', email, clientIp, req.headers["user-agent"], 'PENDING']
+      [
+        "REGISTER_ATTEMPT",
+        email,
+        clientIp,
+        req.headers["user-agent"],
+        "PENDING",
+      ]
     );
 
-    // Vérification de l'email existant
+    // Vérification de l'email existant et si c'est un compte Google
     const [existingUsers] = await pool.query(
-      "SELECT id, deleted_at FROM users WHERE email = ?",
+      "SELECT * FROM users WHERE email = ? AND deleted_at IS NULL",
       [email]
     );
 
     if (existingUsers.length > 0) {
-      // Si le compte est supprimé, permettre la réinscription
-      if (existingUsers[0].deleted_at) {
-        await pool.query(
-          "UPDATE users SET deleted_at = NULL WHERE email = ?",
-          [email]
-        );
+      // Si c'est un compte Google
+      if (existingUsers[0].google_id) {
         await pool.query(
           "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-          ['REACTIVATED', email, 'REGISTER_ATTEMPT']
+          ["FAILED_GOOGLE_ACCOUNT", email, "REGISTER_ATTEMPT"]
+        );
+        return res.status(400).json({
+          message:
+            "Cet email est déjà utilisé avec un compte Google. Veuillez vous connecter avec Google.",
+          isGoogleAccount: true,
+        });
+      }
+
+      // Si le compte est supprimé, permettre la réinscription
+      if (existingUsers[0].deleted_at) {
+        await pool.query("UPDATE users SET deleted_at = NULL WHERE email = ?", [
+          email,
+        ]);
+        await pool.query(
+          "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
+          ["REACTIVATED", email, "REGISTER_ATTEMPT"]
         );
       } else {
         await pool.query(
           "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-          ['FAILED_EMAIL_EXISTS', email, 'REGISTER_ATTEMPT']
+          ["FAILED_EMAIL_EXISTS", email, "REGISTER_ATTEMPT"]
         );
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Cet email est déjà utilisé",
-          code: "EMAIL_EXISTS"
+          code: "EMAIL_EXISTS",
         });
       }
     }
@@ -95,7 +114,7 @@ export default async function handler(req, res) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Création du compte dans une transaction
-    await pool.query('START TRANSACTION');
+    await pool.query("START TRANSACTION");
 
     try {
       // Insertion de l'utilisateur
@@ -105,46 +124,52 @@ export default async function handler(req, res) {
           password, 
           created_at,
           created_ip,
-          created_user_agent
-        ) VALUES (?, ?, NOW(), ?, ?)`,
+          created_user_agent,
+          credits,
+          rank
+        ) VALUES (?, ?, NOW(), ?, ?, 1, 'free')`,
         [email, hashedPassword, clientIp, req.headers["user-agent"]]
       );
 
       // Création des entrées dans les tables associées si nécessaire
+      await pool.query("INSERT INTO user_settings (user_id) VALUES (?)", [
+        result.insertId,
+      ]);
+
+      // Création du profil vide
       await pool.query(
-        "INSERT INTO user_settings (user_id) VALUES (?)",
+        "INSERT INTO profiles (user_id, created_at) VALUES (?, NOW())",
         [result.insertId]
       );
 
-      await pool.query('COMMIT');
+      await pool.query("COMMIT");
 
       // Log du succès
       await pool.query(
         "UPDATE security_logs SET status = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-        ['SUCCESS', email, 'REGISTER_ATTEMPT']
+        ["SUCCESS", email, "REGISTER_ATTEMPT"]
       );
 
-      res.status(201).json({ 
+      res.status(201).json({
         message: "Compte créé avec succès",
-        code: "REGISTRATION_SUCCESS"
+        code: "REGISTRATION_SUCCESS",
       });
     } catch (error) {
-      await pool.query('ROLLBACK');
+      await pool.query("ROLLBACK");
       throw error;
     }
-
   } catch (error) {
     console.error("Registration error:", error);
-    
+
     // Log de l'erreur
     await pool.query(
       "UPDATE security_logs SET status = ?, error = ? WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1",
-      ['FAILED_SERVER_ERROR', error.message, req.body.email, 'REGISTER_ATTEMPT']
+      ["FAILED_SERVER_ERROR", error.message, req.body.email, "REGISTER_ATTEMPT"]
     );
 
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Erreur lors de la création du compte",
-      code: "SERVER_ERROR"
+      code: "SERVER_ERROR",
     });
   }
 }

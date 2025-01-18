@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : ven. 17 jan. 2025 à 10:22
+-- Généré le : sam. 18 jan. 2025 à 01:40
 -- Version du serveur : 10.4.21-MariaDB
 -- Version de PHP : 8.0.12
 
@@ -73,7 +73,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `token`, `expires_at`, `created_at`, `ip_address`, `user_agent`) VALUES
-(37, 6, '087a5e72932662c48d24bd27f0ce3ac2e7deb03cfdd6f4391b16a4ea60282c850bff73b144ac1d16505a3bbf3c5f7f344c5b7631a3861b1e7ca5a1791b69a0ca', '2025-01-24 09:15:31', '2025-01-17 09:15:31', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0');
+(56, 6, '4beeb357d264470ccfaeda317db558c942f024a05980df5e277a52c8228b6c0cd313f1ab8cda5e6f528e0493ef2de9f4a9f892c2c2bf78d239b833a6f7820b75', '2025-01-25 00:23:34', '2025-01-18 00:23:34', '::1', 'node');
 
 -- --------------------------------------------------------
 
@@ -84,26 +84,31 @@ INSERT INTO `sessions` (`id`, `user_id`, `token`, `expires_at`, `created_at`, `i
 CREATE TABLE `users` (
   `id` bigint(20) NOT NULL,
   `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `last_login` timestamp NULL DEFAULT NULL,
   `failed_attempts` int(11) DEFAULT 0,
   `lock_until` timestamp NULL DEFAULT NULL,
   `credits` int(11) DEFAULT 0,
+  `rank` enum('free','pro','enterprise') NOT NULL DEFAULT 'free',
+  `rank_updated_at` timestamp NULL DEFAULT NULL,
   `last_ip` varchar(45) DEFAULT NULL,
   `last_user_agent` text DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   `created_ip` varchar(45) DEFAULT NULL,
-  `created_user_agent` text DEFAULT NULL
+  `created_user_agent` text DEFAULT NULL,
+  `google_id` varchar(255) DEFAULT NULL,
+  `last_failed_login` timestamp NULL DEFAULT NULL,
+  `last_successful_login` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Déchargement des données de la table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password`, `created_at`, `last_login`, `failed_attempts`, `lock_until`, `credits`, `last_ip`, `last_user_agent`, `deleted_at`, `updated_at`, `created_ip`, `created_user_agent`) VALUES
-(6, 'tmoaspro@gmail.com', '$2a$12$25M2u8IalU8RN.WIM.DvpeFk6u.R3lYRKww07jeS2Xa./bFBr3ugi', '2025-01-16 12:04:50', '2025-01-17 09:15:31', 0, NULL, 99, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', NULL, '2025-01-17 09:15:31', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0');
+INSERT INTO `users` (`id`, `email`, `password`, `created_at`, `last_login`, `failed_attempts`, `lock_until`, `credits`, `rank`, `rank_updated_at`, `last_ip`, `last_user_agent`, `deleted_at`, `updated_at`, `created_ip`, `created_user_agent`, `google_id`, `last_failed_login`, `last_successful_login`) VALUES
+(6, 'tmoaspro@gmail.com', '$2a$12$yOjS2qu2Ln7rnFy3lOcDGOxt2DO93T4.QqVYIN7ZlZ8yYugfnKcWC', '2025-01-16 12:04:50', '2025-01-18 00:23:34', 0, NULL, 99, 'free', NULL, '::1', 'node', NULL, '2025-01-18 00:28:14', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', NULL, NULL, NULL);
 
 --
 -- Index pour les tables déchargées
@@ -140,6 +145,8 @@ ALTER TABLE `sessions`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `google_id` (`google_id`),
+  ADD UNIQUE KEY `idx_google_id` (`google_id`),
   ADD KEY `idx_email` (`email`);
 
 --
@@ -150,25 +157,25 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT pour la table `profiles`
 --
 ALTER TABLE `profiles`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT pour la table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Contraintes pour les tables déchargées

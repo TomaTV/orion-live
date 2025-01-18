@@ -1,4 +1,6 @@
 import pool from "@/lib/db";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -7,18 +9,36 @@ export default async function handler(req, res) {
 
   try {
     const { theme } = req.body;
-    
-    // Récupérer l'ID de l'utilisateur depuis la session
-    const [sessions] = await pool.query(
-      "SELECT user_id FROM sessions WHERE token = ?",
-      [req.cookies.auth]
-    );
+    let userId = null;
 
-    if (sessions.length === 0) {
-      return res.status(401).json({ error: "Non autorisé" });
+    // Vérifie d'abord la session NextAuth
+    const session = await getServerSession(req, res, authOptions);
+    if (session?.user?.email) {
+      const [users] = await pool.query(
+        "SELECT id FROM users WHERE email = ?",
+        [session.user.email]
+      );
+      if (users.length > 0) {
+        userId = users[0].id;
+      }
     }
 
-    const userId = sessions[0].user_id;
+    // Si pas de session NextAuth, essaie la méthode traditionnelle
+    if (!userId) {
+      const [sessions] = await pool.query(
+        "SELECT user_id FROM sessions WHERE token = ?",
+        [req.cookies.auth]
+      );
+      
+      if (sessions.length > 0) {
+        userId = sessions[0].user_id;
+      }
+    }
+
+    // Si aucune authentification n'est valide
+    if (!userId) {
+      return res.status(401).json({ error: "Non autorisé" });
+    }
 
     // Vérifier si l'utilisateur a déjà des settings
     const [existingSettings] = await pool.query(

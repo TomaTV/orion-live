@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Home, LogIn, AlertCircle, Loader2 } from "lucide-react";
 import LoginBackground from "../components/ui/LoginBackground";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export default function Login() {
   const router = useRouter();
@@ -48,27 +49,25 @@ export default function Login() {
     setErrors({ ...errors, general: "" });
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...credentials, rememberMe }),
+      const result = await signIn("credentials", {
+        email: credentials.email,
+        password: credentials.password,
+        redirect: false
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        router.push("/app");
-      } else {
+      if (result?.error) {
         setErrors({
           ...errors,
-          general:
-            data.message || "Une erreur est survenue lors de la connexion",
+          general: "Email ou mot de passe incorrect"
         });
+      } else {
+        localStorage.setItem("isAuthenticated", "true");
+        router.push("/app");
       }
     } catch (error) {
       setErrors({
         ...errors,
-        general: "Une erreur est survenue lors de la connexion",
+        general: "Une erreur est survenue lors de la connexion"
       });
     } finally {
       setIsLoading(false);
@@ -80,14 +79,13 @@ export default function Login() {
     setErrors({ ...errors, general: "" });
 
     try {
-      setErrors({
-        ...errors,
-        general: "La connexion avec Google n'est pas encore disponible",
+      await signIn("google", {
+        callbackUrl: `${window.location.origin}/app`,
       });
     } catch (error) {
       setErrors({
         ...errors,
-        general: "Une erreur est survenue avec Google",
+        general: "Une erreur est survenue avec Google"
       });
     } finally {
       setGoogleLoading(false);
