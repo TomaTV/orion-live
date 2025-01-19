@@ -30,12 +30,21 @@ const creditPacks = {
       { amount: 20, price: 25.0, discount: 35, popular: true },
     ],
   },
+  admin: {
+    credits: [
+      { amount: 1, price: 0 },
+      { amount: 5, price: 0 },
+      { amount: 10, price: 0 },
+      { amount: 20, price: 0 },
+    ],
+  },
 };
 
 const RankTitles = {
   free: "Standard",
   pro: "Pro",
   enterprise: "Entreprise",
+  admin: "Admin",
 };
 
 function PricingPage() {
@@ -78,7 +87,7 @@ function PricingPage() {
     );
   }
 
-  const currentPackage = creditPacks[userRank];
+  const currentPackage = creditPacks[userRank] || creditPacks.free;
 
   const handlePurchase = async () => {
     if (!selectedPack || processingPayment) return;
@@ -125,7 +134,7 @@ function PricingPage() {
             className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour à l'application
+            Retour à l&apos;application
           </Link>
         </div>
 

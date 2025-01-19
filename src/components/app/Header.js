@@ -1,8 +1,8 @@
+import { handleLogout as handleAuthLogout } from "@/lib/auth";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { LogOut, Moon, Sun, Plus, Sparkles } from "lucide-react";
-import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 function HeaderApp() {
@@ -126,23 +126,7 @@ function HeaderApp() {
   };
 
   const handleLogout = async () => {
-    try {
-      // Déconnexion du système NextAuth
-      await signOut({ redirect: false });
-      
-      // Déconnexion du système personnalisé
-      await fetch("/api/auth/logout", { method: "POST" });
-      
-      // Suppression du cookie auth
-      document.cookie = "auth=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-      
-      // Redirection vers la page de login
-      router.push("/login");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion:", error);
-      // En cas d'erreur, on force quand même la redirection
-      router.push("/login");
-    }
+    await handleAuthLogout(router);
   };
 
   return (

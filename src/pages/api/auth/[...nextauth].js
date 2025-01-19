@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import crypto from 'crypto';
 import pool from "../../../lib/db";
 
 export const authOptions = {
@@ -18,13 +19,25 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
+          // Récupérer le dernier user-agent connu
+          const [lastLogs] = await pool.query(
+            `SELECT user_agent FROM security_logs 
+             WHERE email = ? 
+             AND status = 'SUCCESS' 
+             ORDER BY created_at DESC 
+             LIMIT 1`,
+            [credentials.email]
+          );
+
+          const userAgent = lastLogs[0]?.user_agent || credentials.userAgent;
+
           const res = await fetch(
             `${process.env.NEXTAUTH_URL}/api/auth/login`,
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "X-User-Agent": credentials.userAgent,
+                "X-User-Agent": userAgent,
               },
               body: JSON.stringify({
                 email: credentials.email,
@@ -42,9 +55,9 @@ export const authOptions = {
             throw new Error(data.message || "Une erreur est survenue");
           }
 
-          return data.user; // Retourner directement l'utilisateur
+          return data.user;
         } catch (error) {
-          throw error; // Propager l'erreur pour qu'elle soit affichée
+          throw error;
         }
       },
     }),
@@ -66,7 +79,7 @@ export const authOptions = {
            LIMIT 1`
         );
 
-        const clientIp = lastLogs[0]?.ip_address;
+        const clientIp = lastLogs[0]?.ip_address || '127.0.0.1';
         const userAgent = lastLogs[0]?.user_agent;
 
         // Vérifier si l'utilisateur existe déjà
@@ -76,10 +89,7 @@ export const authOptions = {
         );
 
         // Définir le type de log en fonction de si c'est une première connexion ou non
-        const logType =
-          users.length === 0
-            ? "REGISTER_GOOGLE_ATTEMPT"
-            : "LOGIN_GOOGLE_ATTEMPT";
+        const logType = users.length === 0 ? "GOOGLE_REGISTER" : "GOOGLE_LOGIN";
 
         // Mise à jour du log précédent
         if (lastLogs[0]) {
@@ -95,6 +105,8 @@ export const authOptions = {
             [user.email, logType]
           );
         }
+
+        let userId;
 
         if (users.length === 0) {
           // Nouveau utilisateur
@@ -117,22 +129,27 @@ export const authOptions = {
             ]
           );
 
+          userId = result.insertId;
+
           await pool.query(
             `INSERT INTO profiles (
               user_id, first_name, last_name, avatar_url
             ) VALUES (?, ?, ?, ?)`,
             [
-              result.insertId,
+              userId,
               profile.given_name || "",
               profile.family_name || "",
               profile.picture || "",
             ]
           );
 
-          await pool.query("INSERT INTO user_settings (user_id) VALUES (?)", [
-            result.insertId,
-          ]);
+          await pool.query(
+            "INSERT INTO user_settings (user_id) VALUES (?)",
+            [userId]
+          );
         } else {
+          userId = users[0].id;
+          
           // Mise à jour utilisateur existant
           await pool.query(
             `UPDATE users SET 
@@ -145,6 +162,19 @@ export const authOptions = {
           );
         }
 
+        // Création de session
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+
+        await pool.query(
+          `INSERT INTO sessions (
+            user_id, token, expires_at, ip_address, user_agent
+          ) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 DAY), ?, ?)`,
+          [userId, sessionToken, clientIp, userAgent]
+        );
+
+        user.id = userId;
+        user.sessionToken = sessionToken;
+
         return true;
       } catch (error) {
         console.error("Erreur signin:", error);
@@ -153,14 +183,27 @@ export const authOptions = {
     },
 
     async jwt({ token, account, profile, user }) {
+      // Log pour déboguer le flux JWT
+      console.log('jwt callback avec:', { tokenEmail: token?.email, userEmail: user?.email });
+      
       if (account) {
         token.accessToken = account.access_token;
         token.id = user.id;
+        token.email = user.email; // Ajout de l'email dans le token
+        token.sessionToken = user.sessionToken;
       }
       return token;
     },
 
     async session({ session, token }) {
+      // Log pour déboguer le flux de session
+      console.log('session callback avec:', { sessionEmail: session?.user?.email, tokenEmail: token?.email });
+
+      if (token) {
+        session.user.id = token.id;
+        session.user.email = token.email;
+      }
+
       if (session?.user?.email) {
         try {
           const [users] = await pool.query(
@@ -169,7 +212,6 @@ export const authOptions = {
           );
 
           if (users.length > 0) {
-            session.user.id = users[0].id;
             session.user.credits = users[0].credits;
             session.user.rank = users[0].rank;
           }
@@ -179,6 +221,60 @@ export const authOptions = {
       }
       return session;
     },
+
+    async signOut({ session, token }) {
+      console.log('signOut callback appelé avec:', { session, token });
+      try {
+        const email = session?.user?.email || token?.email;
+        console.log('Email trouvé:', email);
+        if (!email) {
+          console.error('Pas d\'email trouvé dans session ou token');
+          return false;
+        }
+
+        // Récupérer les infos de l'utilisateur avec logging
+        console.log('Recherche utilisateur pour email:', email);
+        const [users] = await pool.query(
+          `SELECT id, email, last_ip, last_user_agent, google_id 
+           FROM users 
+           WHERE email = ? 
+           AND deleted_at IS NULL`,
+          [email]
+        );
+        console.log('Utilisateur trouvé:', users[0]);
+
+        if (users[0]) {
+          const user = users[0];
+          const logType = user.google_id ? 'GOOGLE_LOGOUT' : 'LOGOUT';
+          console.log('Type de logout:', logType);
+          
+          // Log de déconnexion
+          await pool.query(
+            `INSERT INTO security_logs 
+             (type, email, ip_address, user_agent, status, error)
+             VALUES (?, ?, ?, ?, 'SUCCESS', ?)`,
+            [logType, user.email, user.last_ip, user.last_user_agent, 
+             JSON.stringify({ provider: user.google_id ? 'google' : 'credentials' })]
+          );
+          console.log('Log de sécurité créé');
+
+          // Suppression de toutes les sessions de l'utilisateur
+          const [result] = await pool.query(
+            'DELETE FROM sessions WHERE user_id = ?',
+            [user.id]
+          );
+          console.log('Sessions supprimées:', result.affectedRows);
+
+          return true;
+        } else {
+          console.error('Utilisateur non trouvé pour email:', email);
+          return false;
+        }
+      } catch (error) {
+        console.error('Erreur lors du logout:', error);
+        return false;
+      }
+    }
   },
   pages: {
     signIn: "/login",

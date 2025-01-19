@@ -16,8 +16,13 @@ export default async function handler(req, res) {
   }
 
   // Récupération de l'IP et user agent
-  const clientIp =
-    req.headers["x-forwarded-for"] || req.socket.remoteAddress || "::1";
+  let clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "::1";
+  
+  // Standardisation de l'IP au format IPv6
+  if (clientIp === "127.0.0.1" || clientIp === "::1") {
+    clientIp = "::ffff:127.0.0.1";
+  }
+
   const userAgent =
     req.headers["x-user-agent"] || req.headers["user-agent"] || "unknown";
 
