@@ -1,4 +1,4 @@
-import { withAdmin } from "@/middleware/auth";
+import { withAdmin } from "@/pages/api/admin/auth";
 
 const handler = async (req, res) => {
   if (req.method !== "GET") {
