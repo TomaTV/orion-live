@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
 /**
  * Génère un code sécurisé de la longueur spécifiée
@@ -12,10 +12,12 @@ export const generateSecureCode = (length = 6, numbersOnly = true) => {
     const max = Math.pow(10, length) - 1;
     const randomBuffer = crypto.randomBytes(4);
     const randomNumber = randomBuffer.readUInt32BE(0);
-    return (Math.floor(randomNumber / (0xffffffff / (max - min + 1))) + min).toString();
+    return (
+      Math.floor(randomNumber / (0xffffffff / (max - min + 1))) + min
+    ).toString();
   }
 
-  const charset = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // Exclus 0,1,I,O pour éviter la confusion
+  const charset = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // Exclus 0,1,I,O pour éviter la confusion
   const randomBytes = crypto.randomBytes(length);
   const result = new Array(length);
   const maxByte = 256 - (256 % charset.length);
@@ -28,7 +30,7 @@ export const generateSecureCode = (length = 6, numbersOnly = true) => {
     result[i] = charset[randomByte % charset.length];
   }
 
-  return result.join('');
+  return result.join("");
 };
 
 /**
@@ -39,7 +41,7 @@ export const generateSecureCode = (length = 6, numbersOnly = true) => {
 export const validatePassword = (password) => {
   const minLength = 8;
   const maxLength = 128;
-  
+
   const results = {
     isValid: false,
     errors: [],
@@ -48,10 +50,14 @@ export const validatePassword = (password) => {
 
   // Vérification de la longueur
   if (password.length < minLength) {
-    results.errors.push(`Le mot de passe doit contenir au moins ${minLength} caractères`);
+    results.errors.push(
+      `Le mot de passe doit contenir au moins ${minLength} caractères`
+    );
   }
   if (password.length > maxLength) {
-    results.errors.push(`Le mot de passe ne doit pas dépasser ${maxLength} caractères`);
+    results.errors.push(
+      `Le mot de passe ne doit pas dépasser ${maxLength} caractères`
+    );
   }
 
   // Vérification des critères
@@ -67,10 +73,13 @@ export const validatePassword = (password) => {
   results.strength += hasSpecialChars ? 25 : 0;
 
   // Ajout des erreurs
-  if (!hasUpperCase) results.errors.push("Doit contenir au moins une majuscule");
-  if (!hasLowerCase) results.errors.push("Doit contenir au moins une minuscule");
+  if (!hasUpperCase)
+    results.errors.push("Doit contenir au moins une majuscule");
+  if (!hasLowerCase)
+    results.errors.push("Doit contenir au moins une minuscule");
   if (!hasNumbers) results.errors.push("Doit contenir au moins un chiffre");
-  if (!hasSpecialChars) results.errors.push("Doit contenir au moins un caractère spécial");
+  if (!hasSpecialChars)
+    results.errors.push("Doit contenir au moins un caractère spécial");
 
   // Validation finale
   results.isValid = results.errors.length === 0;
@@ -85,13 +94,13 @@ export const validatePassword = (password) => {
  * @returns {boolean} - true si les hashs sont identiques
  */
 export const secureCompare = (a, b) => {
-  if (typeof a !== 'string' || typeof b !== 'string') {
+  if (typeof a !== "string" || typeof b !== "string") {
     return false;
   }
-  
+
   const buff1 = Buffer.from(a);
   const buff2 = Buffer.from(b);
-  
+
   try {
     return crypto.timingSafeEqual(buff1, buff2);
   } catch (error) {
@@ -104,5 +113,5 @@ export const secureCompare = (a, b) => {
  * @returns {string} - Token généré
  */
 export const generateSessionToken = () => {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 };

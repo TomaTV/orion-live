@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import crypto from 'crypto';
+import crypto from "crypto";
 import pool from "../../../lib/db";
 
 export const authOptions = {
@@ -79,7 +79,7 @@ export const authOptions = {
            LIMIT 1`
         );
 
-        const clientIp = lastLogs[0]?.ip_address || '127.0.0.1';
+        const clientIp = lastLogs[0]?.ip_address || "127.0.0.1";
         const userAgent = lastLogs[0]?.user_agent;
 
         // Vérifier si l'utilisateur existe déjà
@@ -143,13 +143,12 @@ export const authOptions = {
             ]
           );
 
-          await pool.query(
-            "INSERT INTO user_settings (user_id) VALUES (?)",
-            [userId]
-          );
+          await pool.query("INSERT INTO user_settings (user_id) VALUES (?)", [
+            userId,
+          ]);
         } else {
           userId = users[0].id;
-          
+
           // Mise à jour utilisateur existant
           await pool.query(
             `UPDATE users SET 
@@ -163,7 +162,7 @@ export const authOptions = {
         }
 
         // Création de session
-        const sessionToken = crypto.randomBytes(32).toString('hex');
+        const sessionToken = crypto.randomBytes(32).toString("hex");
 
         await pool.query(
           `INSERT INTO sessions (
@@ -183,9 +182,6 @@ export const authOptions = {
     },
 
     async jwt({ token, account, profile, user }) {
-      // Log pour déboguer le flux JWT
-      console.log('jwt callback avec:', { tokenEmail: token?.email, userEmail: user?.email });
-      
       if (account) {
         token.accessToken = account.access_token;
         token.id = user.id;
@@ -196,9 +192,6 @@ export const authOptions = {
     },
 
     async session({ session, token }) {
-      // Log pour déboguer le flux de session
-      console.log('session callback avec:', { sessionEmail: session?.user?.email, tokenEmail: token?.email });
-
       if (token) {
         session.user.id = token.id;
         session.user.email = token.email;
@@ -223,17 +216,14 @@ export const authOptions = {
     },
 
     async signOut({ session, token }) {
-      console.log('signOut callback appelé avec:', { session, token });
       try {
         const email = session?.user?.email || token?.email;
-        console.log('Email trouvé:', email);
         if (!email) {
-          console.error('Pas d\'email trouvé dans session ou token');
+          console.error("Pas d'email trouvé dans session ou token");
           return false;
         }
 
         // Récupérer les infos de l'utilisateur avec logging
-        console.log('Recherche utilisateur pour email:', email);
         const [users] = await pool.query(
           `SELECT id, email, last_ip, last_user_agent, google_id 
            FROM users 
@@ -241,40 +231,43 @@ export const authOptions = {
            AND deleted_at IS NULL`,
           [email]
         );
-        console.log('Utilisateur trouvé:', users[0]);
 
         if (users[0]) {
           const user = users[0];
-          const logType = user.google_id ? 'GOOGLE_LOGOUT' : 'LOGOUT';
-          console.log('Type de logout:', logType);
-          
+          const logType = user.google_id ? "GOOGLE_LOGOUT" : "LOGOUT";
+
           // Log de déconnexion
           await pool.query(
             `INSERT INTO security_logs 
              (type, email, ip_address, user_agent, status, error)
              VALUES (?, ?, ?, ?, 'SUCCESS', ?)`,
-            [logType, user.email, user.last_ip, user.last_user_agent, 
-             JSON.stringify({ provider: user.google_id ? 'google' : 'credentials' })]
+            [
+              logType,
+              user.email,
+              user.last_ip,
+              user.last_user_agent,
+              JSON.stringify({
+                provider: user.google_id ? "google" : "credentials",
+              }),
+            ]
           );
-          console.log('Log de sécurité créé');
 
           // Suppression de toutes les sessions de l'utilisateur
           const [result] = await pool.query(
-            'DELETE FROM sessions WHERE user_id = ?',
+            "DELETE FROM sessions WHERE user_id = ?",
             [user.id]
           );
-          console.log('Sessions supprimées:', result.affectedRows);
 
           return true;
         } else {
-          console.error('Utilisateur non trouvé pour email:', email);
+          console.error("Utilisateur non trouvé pour email:", email);
           return false;
         }
       } catch (error) {
-        console.error('Erreur lors du logout:', error);
+        console.error("Erreur lors du logout:", error);
         return false;
       }
-    }
+    },
   },
   pages: {
     signIn: "/login",

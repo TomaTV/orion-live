@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 // Créer le transporteur pour l'envoi d'emails
 const transporter = nodemailer.createTransport({
@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
  */
 export async function sendPasswordResetEmail(email, resetToken) {
   const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/password-reset?token=${resetToken}`;
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #333;">Réinitialisation de mot de passe</h1>
