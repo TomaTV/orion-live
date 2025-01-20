@@ -7,12 +7,13 @@ import { SecurityMonitoring } from '@/lib/securityMonitoring';
 
 // Configuration du rate limiter
 const limiter = rateLimit({
-  interval: 15 * 60 * 1000, // 15 minutes
+  interval: 15 * 60 * 1000,
   maxRequests: 5,
 });
 
 export default async function handler(req, res) {
   let logId;
+  let clientIp = "::ffff:127.0.0.1";
 
   try {
     if (req.method !== "POST") {
@@ -20,11 +21,11 @@ export default async function handler(req, res) {
     }
 
     // Récupération de l'IP et user agent
-    let clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "::1";
-    
-    // Standardisation de l'IP au format IPv6
-    if (clientIp === "127.0.0.1" || clientIp === "::1") {
+    const rawIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "::1";
+    if (rawIp === "127.0.0.1" || rawIp === "::1") {
       clientIp = "::ffff:127.0.0.1";
+    } else {
+      clientIp = rawIp;
     }
 
     const userAgent = req.headers["x-user-agent"] || req.headers["user-agent"] || "unknown";
@@ -89,49 +90,57 @@ export default async function handler(req, res) {
     const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
-      await pool.query("START TRANSACTION");
-      try {
-        // Gestion des tentatives échouées
-        const [currentUser] = await pool.query(
-          "SELECT failed_attempts FROM users WHERE email = ? FOR UPDATE",
-          [email]
-        );
-        const newFailedAttempts = (currentUser[0]?.failed_attempts || 0) + 1;
-        await pool.query(
-          "UPDATE users SET failed_attempts = ? WHERE email = ?",
-          [newFailedAttempts, email]
-        );
+      // Mise à jour des tentatives échouées
+      await pool.query(
+        `UPDATE users 
+         SET failed_attempts = failed_attempts + 1,
+             lock_until = CASE 
+               WHEN (failed_attempts + 1) >= 5 THEN DATE_ADD(NOW(), INTERVAL 30 MINUTE)
+               ELSE NULL
+             END
+         WHERE id = ?`,
+        [user.id]
+      );
 
-        if (newFailedAttempts >= 5) {
-          await pool.query(
-            "UPDATE users SET lock_until = DATE_ADD(NOW(), INTERVAL 30 MINUTE) WHERE email = ?",
-            [email]
-          );
-          await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_MAX_ATTEMPTS", logId]);
-          await pool.query("COMMIT");
-          return res.status(403).json({
-            message: "Compte bloqué pendant 30 minutes suite à trop de tentatives échouées.",
-            locked: true,
-            lockDuration: 30
-          });
-        }
+      // Récupération du nombre de tentatives
+      const [result] = await pool.query(
+        "SELECT failed_attempts FROM users WHERE id = ?",
+        [user.id]
+      );
 
-        await pool.query("COMMIT");
-        await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_INVALID_PASSWORD", logId]);
+      const newFailedAttempts = result[0]?.failed_attempts || 1;
 
-        return res.status(401).json({
-          message: newFailedAttempts === 4 
-            ? "ATTENTION : Dernière tentative avant blocage du compte !"
-            : `Email ou mot de passe incorrect. Il vous reste ${5 - newFailedAttempts} tentatives.`,
-          attemptsLeft: 5 - newFailedAttempts
+      if (newFailedAttempts >= 5) {
+        await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_MAX_ATTEMPTS", logId]);
+        return res.status(403).json({
+          message: "Compte bloqué pendant 30 minutes suite à trop de tentatives échouées.",
+          locked: true,
+          lockDuration: 30
         });
-      } catch (error) {
-        await pool.query("ROLLBACK");
-        throw error;
       }
+
+      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_INVALID_PASSWORD", logId]);
+
+      return res.status(401).json({
+        message: newFailedAttempts === 4 
+          ? "ATTENTION : Dernière tentative avant blocage du compte !"
+          : `Email ou mot de passe incorrect. Il vous reste ${5 - newFailedAttempts} tentatives.`,
+        attemptsLeft: 5 - newFailedAttempts
+      });
     }
 
     try {
+      // Mise à jour légère de l'utilisateur
+      await pool.query(
+        `UPDATE users 
+         SET failed_attempts = 0,
+             last_login = NOW(),
+             last_ip = ?,
+             last_user_agent = ?
+         WHERE id = ?`,
+        [clientIp, userAgent, user.id]
+      );
+
       // Vérification des activités suspectes
       const securityAlerts = await SecurityMonitoring.checkLoginPattern({
         userId: user.id,
@@ -141,41 +150,19 @@ export default async function handler(req, res) {
         userAgent
       });
 
-      // Mise à jour utilisateur sans transaction (pas besoin car une seule opération)
-      await pool.query(
-        `UPDATE users SET 
-         failed_attempts = 0, 
-         lock_until = NULL, 
-         last_login = NOW(),
-         last_ip = ?,
-         last_user_agent = ?
-         WHERE id = ?`,
-        [clientIp, userAgent, user.id]
-      );
-
-      // Mise à jour log de sécurité
+      // Mise à jour du log de sécurité
       await pool.query(
         "UPDATE security_logs SET status = ?, error = ? WHERE id = ?",
         ["SUCCESS", JSON.stringify({ deviceId }), logId]
       );
 
-      const response = {
-        message: "Connexion réussie",
-        user: {
-          id: user.id,
-          email: user.email,
-          rank: user.rank,
-          credits: user.credits,
-          last_login: new Date()
-        }
-      };
+      // Return le minimum requis pour NextAuth
+      return res.status(200).json({
+        id: user.id,
+        email: user.email,
+        name: user.email,
+      });
 
-      // Ajouter les alertes si présentes
-      if (securityAlerts?.length > 0) {
-        response.alerts = securityAlerts;
-      }
-
-      res.status(200).json(response);
     } catch (error) {
       console.error("Error during login process:", error);
       throw error;
