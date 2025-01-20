@@ -11,7 +11,12 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   images: {
-    domains: ["www.gravatar.com"], // Ajoutez Gravatar ici
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.gravatar.com",
+      },
+    ],
   },
 };
 

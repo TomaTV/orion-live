@@ -4,7 +4,7 @@ export default function Document() {
   return (
     <Html lang="fr">
       <Head>
-        <link rel="icon" href="/favicon/white/favicon.ico" />
+        <link rel="icon" href="/favicon/blue/favicon.ico" />
         <meta
           httpEquiv="Content-Security-Policy"
           content="

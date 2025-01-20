@@ -4,6 +4,22 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import crypto from "crypto";
 import pool from "../../../lib/db";
 
+async function createSession(userId, ip, userAgent, token) {
+  const deviceId = crypto.createHash("sha256").update(userAgent).digest("hex");
+  console.log("Creating session with:", { userId, ip, userAgent, deviceId });
+
+  await pool.query(
+    "DELETE FROM sessions WHERE user_id = ? OR expires_at < NOW()",
+    [userId]
+  );
+
+  await pool.query(
+    `INSERT INTO sessions (user_id, token, device_id, expires_at, ip_address, user_agent) 
+     VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 30 DAY), ?, ?)`,
+    [userId, token, deviceId, ip, userAgent]
+  );
+}
+
 export const authOptions = {
   providers: [
     GoogleProvider({
@@ -15,21 +31,11 @@ export const authOptions = {
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
-        userAgent: { type: "text" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         try {
-          // Récupérer le dernier user-agent connu
-          const [lastLogs] = await pool.query(
-            `SELECT user_agent FROM security_logs 
-             WHERE email = ? 
-             AND status = 'SUCCESS' 
-             ORDER BY created_at DESC 
-             LIMIT 1`,
-            [credentials.email]
-          );
-
-          const userAgent = lastLogs[0]?.user_agent || credentials.userAgent;
+          const userAgent = req.headers["user-agent"] || "unknown";
+          console.log("Real user agent:", userAgent);
 
           const res = await fetch(
             `${process.env.NEXTAUTH_URL}/api/auth/login`,
@@ -55,7 +61,10 @@ export const authOptions = {
             throw new Error(data.message || "Une erreur est survenue");
           }
 
-          return data.user;
+          return {
+            ...data.user,
+            userAgent,
+          };
         } catch (error) {
           throw error;
         }
@@ -63,14 +72,25 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile, credentials, req }) {
       try {
         if (account.provider === "credentials") {
+          const clientIp =
+            req?.headers["x-forwarded-for"] ||
+            req?.socket?.remoteAddress ||
+            "::ffff:127.0.0.1";
+
+          await createSession(
+            user.id,
+            clientIp,
+            user.userAgent,
+            crypto.randomBytes(64).toString("hex")
+          );
           return true;
         }
 
-        // Récupérer les infos stockées précédemment
-        const [lastLogs] = await pool.query(
+        // Pour Google Login
+        const [preLogs] = await pool.query(
           `SELECT ip_address, user_agent
            FROM security_logs 
            WHERE type = 'PRE_GOOGLE_LOGIN' 
@@ -79,8 +99,9 @@ export const authOptions = {
            LIMIT 1`
         );
 
-        const clientIp = lastLogs[0]?.ip_address || "127.0.0.1";
-        const userAgent = lastLogs[0]?.user_agent;
+        const clientIp = preLogs[0]?.ip_address || "::ffff:127.0.0.1";
+        const userAgent =
+          preLogs[0]?.user_agent || req?.headers["user-agent"] || "unknown";
 
         // Vérifier si l'utilisateur existe déjà
         const [users] = await pool.query(
@@ -88,11 +109,10 @@ export const authOptions = {
           [user.email, profile.sub]
         );
 
-        // Définir le type de log en fonction de si c'est une première connexion ou non
         const logType = users.length === 0 ? "GOOGLE_REGISTER" : "GOOGLE_LOGIN";
 
         // Mise à jour du log précédent
-        if (lastLogs[0]) {
+        if (preLogs[0]) {
           await pool.query(
             `UPDATE security_logs 
              SET status = 'SUCCESS', 
@@ -149,7 +169,6 @@ export const authOptions = {
         } else {
           userId = users[0].id;
 
-          // Mise à jour utilisateur existant
           await pool.query(
             `UPDATE users SET 
               google_id = ?,
@@ -161,18 +180,12 @@ export const authOptions = {
           );
         }
 
-        // Création de session
-        const sessionToken = crypto.randomBytes(32).toString("hex");
-
-        await pool.query(
-          `INSERT INTO sessions (
-            user_id, token, expires_at, ip_address, user_agent
-          ) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 DAY), ?, ?)`,
-          [userId, sessionToken, clientIp, userAgent]
-        );
+        const sessionToken = crypto.randomBytes(64).toString("hex");
+        await createSession(userId, clientIp, userAgent, sessionToken);
 
         user.id = userId;
         user.sessionToken = sessionToken;
+        user.userAgent = userAgent;
 
         return true;
       } catch (error) {
@@ -185,8 +198,9 @@ export const authOptions = {
       if (account) {
         token.accessToken = account.access_token;
         token.id = user.id;
-        token.email = user.email; // Ajout de l'email dans le token
+        token.email = user.email;
         token.sessionToken = user.sessionToken;
+        token.userAgent = user.userAgent;
       }
       return token;
     },
@@ -195,6 +209,7 @@ export const authOptions = {
       if (token) {
         session.user.id = token.id;
         session.user.email = token.email;
+        session.user.userAgent = token.userAgent;
       }
 
       if (session?.user?.email) {
@@ -252,11 +267,8 @@ export const authOptions = {
             ]
           );
 
-          // Suppression de toutes les sessions de l'utilisateur
-          const [result] = await pool.query(
-            "DELETE FROM sessions WHERE user_id = ?",
-            [user.id]
-          );
+          // Suppression des sessions au logout
+          await pool.query("DELETE FROM sessions WHERE user_id = ?", [user.id]);
 
           return true;
         } else {
@@ -267,6 +279,11 @@ export const authOptions = {
         console.error("Erreur lors du logout:", error);
         return false;
       }
+    },
+  },
+  events: {
+    async signIn({ user, account, profile, isNewUser }) {
+      console.log(`Signin event - User Agent: ${user.userAgent}`);
     },
   },
   pages: {

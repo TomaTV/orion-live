@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import HeaderApp from "@/components/app/Header";
 import AdminOnly from "@/components/hooks/AdminOnly";
+import SearchBar from "@/components/app/Searchbar";
 
 function AppPage() {
   const router = useRouter(); // On définit le router ici
@@ -33,6 +34,7 @@ function AppPage() {
           </p>
         </div>
       </AdminOnly>
+      <SearchBar />
     </div>
   );
 }

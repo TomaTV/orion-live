@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : dim. 19 jan. 2025 à 22:49
+-- Généré le : lun. 20 jan. 2025 à 08:30
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -56,8 +56,7 @@ CREATE TABLE `profiles` (
 --
 
 INSERT INTO `profiles` (`id`, `user_id`, `first_name`, `last_name`, `avatar_url`, `created_at`, `updated_at`) VALUES
-(35, 41, 'Thomas', 'Devulder', 'https://lh3.googleusercontent.com/a/ACg8ocIldDZ3_qbLD2JHvN0puP7JwOqw3lqmfAHyFvPiO7rGvL-OP7k4=s96-c', '2025-01-19 21:44:58', '2025-01-19 21:44:58'),
-(36, 42, NULL, NULL, NULL, '2025-01-19 21:45:41', '2025-01-19 21:45:41');
+(37, 43, NULL, NULL, NULL, '2025-01-20 07:22:58', '2025-01-20 07:22:58');
 
 -- --------------------------------------------------------
 
@@ -81,15 +80,20 @@ CREATE TABLE `security_logs` (
 --
 
 INSERT INTO `security_logs` (`id`, `type`, `email`, `ip_address`, `user_agent`, `status`, `error`, `created_at`) VALUES
-(99, 'GOOGLE_REGISTER', 'devulder.thomaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', NULL, '2025-01-19 21:44:56'),
-(100, 'GOOGLE_LOGOUT', 'devulder.thomaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"provider\":\"google\"}', '2025-01-19 21:45:07'),
-(101, 'GOOGLE_LOGIN', 'devulder.thomaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', NULL, '2025-01-19 21:45:17'),
-(102, 'GOOGLE_LOGOUT', 'devulder.thomaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"provider\":\"google\"}', '2025-01-19 21:45:27'),
-(103, 'REGISTER_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', NULL, '2025-01-19 21:45:41'),
-(104, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', NULL, '2025-01-19 21:46:02'),
-(105, 'LOGOUT', 'tmoaspro@gmail.com', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"provider\":\"credentials\"}', '2025-01-19 21:46:13'),
-(106, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', NULL, '2025-01-19 21:47:53'),
-(107, 'LOGOUT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"provider\":\"credentials\"}', '2025-01-19 21:48:09');
+(172, 'REGISTER_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', NULL, '2025-01-20 07:22:58'),
+(173, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"deviceId\":\"222bb92af5102d5110f0e2e9fad99c71bc8cbb549e4c991968d86e76e630cca9\"}', '2025-01-20 07:23:20'),
+(174, 'LOGOUT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"provider\":\"credentials\",\"sessionDuration\":\"0 minutes\"}', '2025-01-20 07:23:27'),
+(175, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'SUCCESS', '{\"deviceId\":\"281491d1f3db2c25037df3431a953de3abf1fe4555be19b55bceef3c373d4262\"}', '2025-01-20 07:23:40'),
+(176, 'LOGOUT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'SUCCESS', '{\"provider\":\"credentials\",\"sessionDuration\":\"0 minutes\"}', '2025-01-20 07:24:04'),
+(177, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"deviceId\":\"222bb92af5102d5110f0e2e9fad99c71bc8cbb549e4c991968d86e76e630cca9\"}', '2025-01-20 07:25:32'),
+(178, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'SUCCESS', '{\"deviceId\":\"281491d1f3db2c25037df3431a953de3abf1fe4555be19b55bceef3c373d4262\"}', '2025-01-20 07:25:42'),
+(179, 'LOGOUT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'SUCCESS', '{\"provider\":\"credentials\",\"sessionDuration\":\"0 minutes\"}', '2025-01-20 07:25:48'),
+(180, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'SUCCESS', '{\"deviceId\":\"281491d1f3db2c25037df3431a953de3abf1fe4555be19b55bceef3c373d4262\"}', '2025-01-20 07:28:26'),
+(181, 'LOGOUT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'SUCCESS', '{\"provider\":\"credentials\",\"sessionDuration\":\"0 minutes\"}', '2025-01-20 07:29:16'),
+(182, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"deviceId\":\"222bb92af5102d5110f0e2e9fad99c71bc8cbb549e4c991968d86e76e630cca9\"}', '2025-01-20 07:29:27'),
+(183, 'LOGOUT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'SUCCESS', '{\"provider\":\"credentials\",\"sessionDuration\":\"0 minutes\"}', '2025-01-20 07:29:32'),
+(184, 'LOGIN_ATTEMPT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'SUCCESS', '{\"deviceId\":\"281491d1f3db2c25037df3431a953de3abf1fe4555be19b55bceef3c373d4262\"}', '2025-01-20 07:29:41'),
+(185, 'LOGOUT', 'tmoaspro@gmail.com', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'SUCCESS', '{\"provider\":\"credentials\",\"sessionDuration\":\"0 minutes\"}', '2025-01-20 07:29:47');
 
 -- --------------------------------------------------------
 
@@ -104,7 +108,8 @@ CREATE TABLE `sessions` (
   `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `ip_address` varchar(45) DEFAULT NULL,
-  `user_agent` text DEFAULT NULL
+  `user_agent` text DEFAULT NULL,
+  `device_id` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -137,8 +142,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password`, `google_id`, `created_at`, `last_login`, `failed_attempts`, `lock_until`, `credits`, `rank`, `last_ip`, `last_user_agent`, `deleted_at`, `updated_at`, `created_ip`, `created_user_agent`) VALUES
-(41, 'devulder.thomaspro@gmail.com', NULL, '102633768900261938880', '2025-01-19 21:44:58', '2025-01-19 21:45:19', 0, NULL, 1, 'free', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', NULL, '2025-01-19 21:45:19', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0'),
-(42, 'tmoaspro@gmail.com', '$2a$12$l6dZvDbMONMUo9LxL7mRVO8jCua/P5/U2X1l9TIZIyqBlbyIAr5G2', NULL, '2025-01-19 21:45:41', '2025-01-19 21:47:54', 0, NULL, 999, 'admin', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', NULL, '2025-01-19 21:49:36', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0');
+(43, 'tmoaspro@gmail.com', '$2a$12$MOrucpltPoNDWYaK5m50le2uoft40iG2ip3KaP6/30elXJKRzItLa', NULL, '2025-01-20 07:22:58', '2025-01-20 07:29:43', 0, NULL, 1, 'free', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', NULL, '2025-01-20 07:29:43', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0');
 
 -- --------------------------------------------------------
 
@@ -159,8 +163,7 @@ CREATE TABLE `user_settings` (
 --
 
 INSERT INTO `user_settings` (`id`, `user_id`, `theme`, `created_at`, `updated_at`) VALUES
-(35, 41, 'dark', '2025-01-19 21:44:58', '2025-01-19 21:44:58'),
-(36, 42, 'dark', '2025-01-19 21:45:41', '2025-01-19 21:45:41');
+(37, 43, 'dark', '2025-01-20 07:22:58', '2025-01-20 07:22:58');
 
 --
 -- Index pour les tables déchargées
@@ -197,7 +200,8 @@ ALTER TABLE `sessions`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `token` (`token`),
   ADD KEY `idx_sessions_token` (`token`),
-  ADD KEY `sessions_ibfk_1` (`user_id`);
+  ADD KEY `sessions_ibfk_1` (`user_id`),
+  ADD KEY `idx_device_id` (`device_id`);
 
 --
 -- Index pour la table `users`
@@ -223,37 +227,37 @@ ALTER TABLE `user_settings`
 -- AUTO_INCREMENT pour la table `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT pour la table `profiles`
 --
 ALTER TABLE `profiles`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT pour la table `security_logs`
 --
 ALTER TABLE `security_logs`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=108;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=186;
 
 --
 -- AUTO_INCREMENT pour la table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
 
 --
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT pour la table `user_settings`
 --
 ALTER TABLE `user_settings`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- Contraintes pour les tables déchargées
