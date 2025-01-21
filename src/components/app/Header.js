@@ -157,7 +157,7 @@ function HeaderApp() {
 
           <Link
             href="/app/profil"
-            className="w-8 h-8 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm relative overflow-hidden flex items-center justify-center"
+            className="w-9 h-9 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm relative overflow-hidden flex items-center justify-center"
           >
             {avatar ? (
               <img

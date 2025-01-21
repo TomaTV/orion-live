@@ -24,7 +24,7 @@ function MyApp({ Component, pageProps }) {
     } else {
       document.documentElement.classList.toggle("dark", theme === "dark");
     }
-  }, [router.pathname]);
+  }, [router, router.pathname]);
 
   // On applique une classe pour éviter le flash de contenu
   useEffect(() => {
