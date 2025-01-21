@@ -48,15 +48,17 @@ export default async function handler(req, res) {
       return res.status(401).json({ message: "Non autorisé" });
     }
 
-    // Récupérer les informations de l'utilisateur
+    // Récupérer les informations de l'utilisateur avec son profil
     const [users] = await pool.query(
       `SELECT 
-        id, 
-        email, 
-        credits,
-        rank
-      FROM users 
-      WHERE id = ?`,
+        u.id, 
+        u.email, 
+        u.credits,
+        u.rank,
+        p.avatar_url
+      FROM users u
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE u.id = ?`,
       [userId]
     );
 

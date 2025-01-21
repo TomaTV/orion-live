@@ -1,12 +1,12 @@
 import { handleLogout as handleAuthLogout } from "@/lib/securityMonitoring";
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { LogOut, Moon, Sun, Plus, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 
 function HeaderApp() {
   const [credits, setCredits] = useState(0);
+  const [avatar, setAvatar] = useState(null);
   const [isDark, setIsDark] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [changeCount, setChangeCount] = useState(0);
@@ -23,6 +23,7 @@ function HeaderApp() {
         const data = await response.json();
         if (response.ok) {
           setCredits(data.credits);
+          setAvatar(data.avatar_url);
 
           // Si l'utilisateur a une préférence de thème en base, l'utiliser
           if (data.theme) {
@@ -124,7 +125,7 @@ function HeaderApp() {
         {/* Logo */}
         <div className="flex items-center gap-x-3">
           <div className="relative">
-            <Image
+            <img
               src={isDark ? "/img/logo.png" : "/img/logo-black.png"}
               alt="Logo Orion"
               width={40}
@@ -133,7 +134,7 @@ function HeaderApp() {
               className="rounded-xl"
             />
           </div>
-          <span className="text-2xl font-bold text-gray-800 dark:text-white">
+          <span className="text-2xl font-bold text-gray-800 dark:text-white font-spaceg">
             Orion
           </span>
         </div>
@@ -156,9 +157,17 @@ function HeaderApp() {
 
           <Link
             href="/app/profil"
-            className="p-2 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm"
+            className="w-8 h-8 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm relative overflow-hidden flex items-center justify-center"
           >
-            <User size={20} className="text-gray-600 dark:text-white" />
+            {avatar ? (
+              <img
+                src={avatar}
+                alt="Profile"
+                className="w-full h-full object-cover rounded-lg"
+              />
+            ) : (
+              <User size={20} className="text-gray-600 dark:text-white" />
+            )}
           </Link>
 
           <button

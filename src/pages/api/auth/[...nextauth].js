@@ -230,10 +230,52 @@ export const authOptions = {
                     device_id,
                     user_agent,
                     last_ip,
-                    is_trusted
-                  ) VALUES (?, ?, ?, ?, ?)`,
-                  [userId, deviceId, userAgent, clientIp, false]
+                    is_trusted,
+                    login_count
+                  ) VALUES (?, ?, ?, ?, ?, ?)`,
+                  [userId, deviceId, userAgent, clientIp, false, 1]
                 );
+                
+                // Vérifier si on a déjà envoyé un email pour ce device
+                const [emailLogs] = await pool.query(
+                  `SELECT * FROM security_email_logs 
+                   WHERE user_id = ? AND device_id = ? AND email_type = 'new_device'`,
+                  [userId, deviceId]
+                );
+                
+                if (emailLogs.length === 0) {
+                  // Envoyer l'email de nouveau device
+                  await pool.query(
+                    `INSERT INTO security_email_logs (user_id, device_id, email_type)
+                     VALUES (?, ?, 'new_device')`,
+                    [userId, deviceId]
+                  );
+                  // Logique d'envoi d'email ici
+                }
+              } else {
+                // Mettre à jour le compteur de connexions
+                await pool.query(
+                  `UPDATE user_devices 
+                   SET login_count = login_count + 1,
+                       last_verified_at = NOW()
+                   WHERE user_id = ? AND device_id = ?`,
+                  [userId, deviceId]
+                );
+                
+                // Vérifier si le device doit devenir trusted
+                const [deviceInfo] = await pool.query(
+                  `SELECT login_count, is_trusted FROM user_devices
+                   WHERE user_id = ? AND device_id = ?`,
+                  [userId, deviceId]
+                );
+                
+                if (deviceInfo[0] && deviceInfo[0].login_count >= 3 && !deviceInfo[0].is_trusted) {
+                  await pool.query(
+                    `UPDATE user_devices SET is_trusted = 1
+                     WHERE user_id = ? AND device_id = ?`,
+                    [userId, deviceId]
+                  );
+                }
               }
 
               // Log de la connexion
