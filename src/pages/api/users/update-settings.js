@@ -1,72 +1,185 @@
-import pool from "@/lib/db";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
+import pool from "../../../lib/db";
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+async function validateSettings(settings) {
+  const errors = [];
+
+  // Validation du thème
+  if (settings.theme && !["dark", "light"].includes(settings.theme)) {
+    errors.push("Thème invalide");
   }
 
+  // Validation des noms
+  if (
+    settings.firstName &&
+    (settings.firstName.length < 2 || settings.firstName.length > 50)
+  ) {
+    errors.push("Le prénom doit contenir entre 2 et 50 caractères");
+  }
+  if (
+    settings.lastName &&
+    (settings.lastName.length < 2 || settings.lastName.length > 50)
+  ) {
+    errors.push("Le nom doit contenir entre 2 et 50 caractères");
+  }
+
+  // Validation URL avatar
+  if (settings.avatarUrl && !settings.avatarUrl.startsWith("https://")) {
+    errors.push("L'URL de l'avatar doit être sécurisée (https)");
+  }
+
+  return errors;
+}
+
+export default async function handler(req, res) {
+  let logId = null;
+
   try {
-    const { theme } = req.body;
-    let userId = null;
-
-    // Vérifie d'abord la session NextAuth
     const session = await getServerSession(req, res, authOptions);
-    if (session?.user?.email) {
-      const [users] = await pool.query(
-        "SELECT id FROM users WHERE email = ?",
-        [session.user.email]
+
+    if (!session?.user?.id) {
+      return res.status(401).json({ message: "Non authentifié" });
+    }
+
+    const userId = session.user.id;
+    const userEmail = session.user.email;
+
+    // Informations de sécurité
+    const userIp =
+      req.headers["x-forwarded-for"] || req.socket.remoteAddress || "::1";
+    const userAgent = req.headers["user-agent"] || "unknown";
+
+    if (req.method === "GET") {
+      // Récupération des données utilisateur
+      const [userData] = await pool.query(
+        `SELECT 
+          p.first_name AS firstName,
+          p.last_name AS lastName,
+          p.avatar_url AS avatarUrl,
+          us.theme
+        FROM profiles p
+        LEFT JOIN user_settings us ON p.user_id = us.user_id
+        WHERE p.user_id = ?`,
+        [userId]
       );
-      if (users.length > 0) {
-        userId = users[0].id;
+
+      if (userData.length === 0) {
+        return res.status(404).json({ message: "Profil non trouvé." });
+      }
+
+      return res.status(200).json(userData[0]);
+    }
+
+    if (req.method === "POST") {
+      const { theme, firstName, lastName, avatarUrl } = req.body;
+
+      const validationErrors = await validateSettings({
+        theme,
+        firstName,
+        lastName,
+        avatarUrl,
+      });
+
+      if (validationErrors.length > 0) {
+        return res.status(400).json({
+          message: "Données invalides",
+          errors: validationErrors,
+        });
+      }
+
+      // Log initial de tentative de mise à jour
+      const [logInsert] = await pool.query(
+        `INSERT INTO security_logs (type, email, ip_address, user_agent, status)
+         VALUES (?, ?, ?, ?, ?)`,
+        ["SETTINGS_UPDATE_ATTEMPT", userEmail, userIp, userAgent, "PENDING"]
+      );
+      logId = logInsert.insertId;
+
+      await pool.query("START TRANSACTION");
+
+      try {
+        // Mise à jour des paramètres utilisateur
+        if (theme) {
+          await pool.query(
+            `INSERT INTO user_settings (user_id, theme) 
+             VALUES (?, ?) 
+             ON DUPLICATE KEY UPDATE theme = ?`,
+            [userId, theme, theme]
+          );
+        }
+
+        // Mise à jour ou insertion dans la table "profiles"
+        await pool.query(
+          `INSERT INTO profiles (user_id, first_name, last_name, avatar_url)
+           VALUES (?, ?, ?, ?)
+           ON DUPLICATE KEY UPDATE
+             first_name = VALUES(first_name),
+             last_name = VALUES(last_name),
+             avatar_url = VALUES(avatar_url)`,
+          [userId, firstName || null, lastName || null, avatarUrl || null]
+        );
+
+        // Log succès
+        await pool.query(
+          `UPDATE security_logs
+           SET status = ?, error = ?
+           WHERE id = ?`,
+          ["SUCCESS", null, logId]
+        );
+
+        await pool.query("COMMIT");
+
+        // Récupération des données mises à jour
+        const [updatedSettings] = await pool.query(
+          `SELECT 
+            p.first_name AS firstName,
+            p.last_name AS lastName,
+            p.avatar_url AS avatarUrl,
+            us.theme
+          FROM profiles p
+          LEFT JOIN user_settings us ON p.user_id = us.user_id
+          WHERE p.user_id = ?`,
+          [userId]
+        );
+
+        return res.status(200).json({
+          message: "Paramètres mis à jour avec succès",
+          settings: updatedSettings[0],
+        });
+      } catch (error) {
+        await pool.query("ROLLBACK");
+
+        // Log échec
+        if (logId) {
+          await pool.query(
+            `UPDATE security_logs
+             SET status = ?, error = ?
+             WHERE id = ?`,
+            ["FAILED", error.message, logId]
+          );
+        }
+
+        throw error;
       }
     }
 
-    // Si pas de session NextAuth, essaie la méthode traditionnelle
-    if (!userId) {
-      const [sessions] = await pool.query(
-        "SELECT user_id FROM sessions WHERE token = ?",
-        [req.cookies.auth]
-      );
-      
-      if (sessions.length > 0) {
-        userId = sessions[0].user_id;
-      }
-    }
-
-    // Si aucune authentification n'est valide
-    if (!userId) {
-      return res.status(401).json({ error: "Non autorisé" });
-    }
-
-    // Vérifier si l'utilisateur a déjà des settings
-    const [existingSettings] = await pool.query(
-      "SELECT id FROM user_settings WHERE user_id = ?",
-      [userId]
-    );
-
-    if (existingSettings.length > 0) {
-      // Mettre à jour les settings existants
-      await pool.query(
-        `UPDATE user_settings 
-         SET theme = ?, updated_at = NOW() 
-         WHERE user_id = ?`,
-        [theme, userId]
-      );
-    } else {
-      // Créer de nouveaux settings
-      await pool.query(
-        `INSERT INTO user_settings 
-         (user_id, theme, email_notifications, language) 
-         VALUES (?, ?, true, 'fr')`,
-        [userId, theme]
-      );
-    }
-
-    res.status(200).json({ message: "Préférences mises à jour" });
+    return res.status(405).json({ message: "Méthode non autorisée" });
   } catch (error) {
-    console.error("Erreur lors de la mise à jour des préférences:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error("Erreur API utilisateur :", error);
+
+    if (logId) {
+      await pool.query(
+        `UPDATE security_logs
+         SET status = ?, error = ?
+         WHERE id = ?`,
+        ["FAILED_SERVER_ERROR", error.message, logId]
+      );
+    }
+
+    res.status(500).json({
+      message: "Erreur lors du traitement",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 }

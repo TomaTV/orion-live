@@ -55,9 +55,11 @@ function PricingPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPack, setSelectedPack] = useState(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
+      if (!session) return; // Ne fait la requête que si la session existe
       try {
         const response = await fetch("/api/users/info");
         const data = await response.json();

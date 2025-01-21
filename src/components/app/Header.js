@@ -1,8 +1,8 @@
-import { handleLogout as handleAuthLogout } from "@/lib/auth";
+import { handleLogout as handleAuthLogout } from "@/lib/securityMonitoring";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { LogOut, Moon, Sun, Plus, Sparkles } from "lucide-react";
+import { LogOut, Moon, Sun, Plus, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 
 function HeaderApp() {
@@ -90,38 +90,27 @@ function HeaderApp() {
   const toggleTheme = async () => {
     if (isUpdating || isLocked) return;
 
-    // Vérifier le nombre de changements
     if (changeCount >= 5) {
       setIsLocked(true);
-      // Mettre en place le timer de 1 minute
-      const timer = setTimeout(() => {
-        setIsLocked(false);
-        setChangeCount(0);
-      }, 60000); // 60 secondes
-      setLockTimer(timer);
+      setLockTimer(setTimeout(() => setIsLocked(false), 60000));
       return;
     }
 
     setIsUpdating(true);
-
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    document.documentElement.classList.toggle("dark", newTheme);
     try {
-      const newTheme = !isDark;
-      setIsDark(newTheme);
-      const themeName = newTheme ? "dark" : "light";
-
-      // Mise à jour locale immédiate
-      localStorage.setItem("theme", themeName);
-      document.documentElement.classList.toggle("dark", newTheme);
-
-      // Mise à jour en DB avec délai
-      updateThemeInDB(themeName);
-
-      // Incrémenter le compteur de changements
-      setChangeCount((prev) => prev + 1);
+      await fetch("/api/users/update-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ theme: newTheme ? "dark" : "light" }),
+      });
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Erreur lors de la mise à jour du thème:", error);
     } finally {
       setIsUpdating(false);
+      setChangeCount((prev) => prev + 1);
     }
   };
 
@@ -134,7 +123,7 @@ function HeaderApp() {
       <div className="flex justify-between items-center h-16 px-6">
         {/* Logo */}
         <div className="flex items-center gap-x-3">
-          <div className="relative transition-opacity duration-300">
+          <div className="relative">
             <Image
               src={isDark ? "/img/logo.png" : "/img/logo-black.png"}
               alt="Logo Orion"
@@ -144,52 +133,53 @@ function HeaderApp() {
               className="rounded-xl"
             />
           </div>
-          <span className="text-2xl font-bold text-gray-800 dark:text-white font-spaceg tracking-wide transition-colors">
+          <span className="text-2xl font-bold text-gray-800 dark:text-white">
             Orion
           </span>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="px-4 py-2 bg-white dark:bg-white/5 rounded-lg flex items-center justify-center shadow-sm transition-colors">
-              <span className="text-gray-700 dark:text-white text-sm font-medium transition-colors flex items-center gap-2">
-                <Sparkles className="w-4 h-4" /> {credits} crédits
+          <div className="flex items-center gap-4">
+            <div className="px-4 py-2 bg-white dark:bg-white/5 rounded-lg shadow-sm flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-gray-700 dark:text-white" />
+              <span className="text-gray-700 dark:text-white text-sm font-medium">
+                {credits} crédits
               </span>
             </div>
-            {/* Bouton + */}
             <Link
               href="/app/pricing"
-              className="p-2 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm transition-all duration-300"
+              className="p-2 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm"
             >
-              <Plus
-                size={20}
-                className="text-gray-600 dark:text-white transition-colors"
-              />
+              <Plus size={20} className="text-gray-600 dark:text-white" />
             </Link>
           </div>
 
-          {/* Bouton thème */}
+          <Link
+            href="/app/profil"
+            className="p-2 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm"
+          >
+            <User size={20} className="text-gray-600 dark:text-white" />
+          </Link>
+
           <button
             onClick={toggleTheme}
             disabled={isUpdating || isLocked}
-            className={`p-2 text-gray-600 dark:text-white hover:bg-white dark:hover:bg-white/5 rounded-lg transition-all duration-300 ${
+            className={`p-2 text-gray-600 dark:text-white hover:bg-white dark:hover:bg-white/5 rounded-lg ${
               isUpdating || isLocked ? "opacity-50 cursor-not-allowed" : ""
             }`}
-            aria-label="Changer le thème"
             title={
               isLocked
-                ? "Attendez 1 minute avant de changer à nouveau le thème"
+                ? "Attendez avant de changer le thème."
                 : "Changer le thème"
             }
           >
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          {/* Déconnexion */}
           <button
             onClick={handleLogout}
-            className="p-2 text-gray-600 dark:text-white hover:bg-white dark:hover:bg-white/5 rounded-lg transition-all duration-300"
-            aria-label="Se déconnecter"
+            className="p-2 text-gray-600 dark:text-white hover:bg-white dark:hover:bg-white/5 rounded-lg"
+            title="Se déconnecter"
           >
             <LogOut size={20} />
           </button>

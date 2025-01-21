@@ -12,7 +12,7 @@ export default function Document() {
     script-src 'self' 'unsafe-inline' 'unsafe-eval';
     style-src 'self' 'unsafe-inline' fonts.googleapis.com;
     font-src 'self' fonts.gstatic.com data:;
-    img-src 'self' data: https://www.gravatar.com;
+    img-src * data: blob:;
     connect-src 'self' vitals.vercel-insights.com;
     frame-src 'self';
     font-src 'self' data: fonts.gstatic.com;

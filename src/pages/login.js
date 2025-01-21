@@ -82,19 +82,15 @@ export default function Login() {
     setErrors({ ...errors, general: "" });
 
     try {
-      // Stocker les infos client avant la redirection Google
-      await fetch("/api/auth/store-google-info", {
+      // Stocker les informations de connexion avant de rediriger vers Google
+      await fetch("/api/auth/store-login-info", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userAgent: window.navigator.userAgent,
-          // L'IP sera capturée côté serveur
-        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
-      await signIn("google", {
-        callbackUrl: `${window.location.origin}/app`,
-      });
+      await signIn("google", { callbackUrl: "/app" });
     } catch (error) {
       setErrors({
         ...errors,
