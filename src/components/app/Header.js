@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { handleLogout as handleAuthLogout } from "@/lib/securityMonitoring";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
@@ -130,7 +131,6 @@ function HeaderApp() {
               alt="Logo Orion"
               width={40}
               height={40}
-              priority
               className="rounded-xl"
             />
           </div>
