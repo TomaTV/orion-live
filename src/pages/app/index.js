@@ -22,7 +22,7 @@ function AppPage() {
   }
 
   return (
-    <div className="min-h-screen dark:bg-orion-dark-bg bg-gray-200/90">
+    <div className="min-h-screen dark:bg-orion-dark-bg bg-gray-50">
       <HeaderApp />
       <AdminOnly>
         <div className="container mx-auto px-4 py-8">

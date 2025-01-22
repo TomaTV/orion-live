@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, Camera, AlertTriangle, CheckCircle2, Loader2, Lock } from "lucide-react";
+import { ArrowLeft, Camera, AlertTriangle, CheckCircle2, Loader2, Lock, Calendar } from "lucide-react";
+import { Mail } from "lucide-react";
 import HeaderApp from "@/components/app/Header";
 import Link from "next/link";
 
@@ -12,11 +13,35 @@ const ProfilePage = () => {
     lastName: "",
     avatarUrl: "",
   });
+  const [userInfo, setUserInfo] = useState({
+    email: "",
+    createdAt: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
+  const [isUserInfoLoading, setIsUserInfoLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!session) return;
+      setIsUserInfoLoading(true);
+      try {
+        const response = await fetch("/api/users/info");
+        if (response.ok) {
+          const data = await response.json();
+          setUserInfo({
+            email: data.email || session.user?.email || "",
+            createdAt: data.createdAt || "",
+          });
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des informations utilisateur:", error);
+      } finally {
+        setIsUserInfoLoading(false);
+      }
+    };
+
     const fetchProfile = async () => {
       if (!session) return;
       setIsLoading(true);
@@ -44,6 +69,8 @@ const ProfilePage = () => {
         setIsLoading(false);
       }
     };
+
+    fetchUserInfo();
     fetchProfile();
   }, [session]);
 
@@ -51,6 +78,16 @@ const ProfilePage = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setMessage(null);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -87,7 +124,7 @@ const ProfilePage = () => {
     }
   };
 
-  if (status === "loading" || isLoading) {
+  if (status === "loading" || isLoading || isUserInfoLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-orion-dark-bg">
         <HeaderApp />
@@ -249,26 +286,47 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                {/* Message Display */}
-                {message && (
-                  <div className={`p-4 rounded-md ${
-                    message.type === 'success' 
-                      ? 'bg-green-50 dark:bg-green-500/5 border border-green-100 dark:border-green-500/10' 
-                      : 'bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/10'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      {message.type === 'success' ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500 dark:text-green-400" />
-                      ) : (
-                        <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400" />
-                      )}
-                      <p className={`text-sm ${
-                        message.type === 'success' 
-                          ? 'text-green-700 dark:text-green-400' 
-                          : 'text-red-700 dark:text-red-400'
-                      }`}>
-                        {message.text}
-                      </p>
+                {/* Email Field (Read-only) */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Adresse email
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={userInfo.email}
+                      readOnly
+                      className="w-full pl-10 pr-4 py-2 rounded-md 
+                               bg-gray-50 dark:bg-white/5 
+                               text-gray-500 dark:text-gray-400
+                               border border-gray-200 dark:border-white/10
+                               cursor-not-allowed"
+                    />
+                    <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                  </div>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    L'adresse email ne peut pas être modifiée ici
+                  </p>
+                </div>
+
+                {/* Registration Date (Read-only) */}
+                {userInfo.createdAt && (
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Date d'inscription
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formatDate(userInfo.createdAt)}
+                        readOnly
+                        className="w-full pl-10 pr-4 py-2 rounded-md 
+                                 bg-gray-50 dark:bg-white/5 
+                                 text-gray-500 dark:text-gray-400
+                                 border border-gray-200 dark:border-white/10
+                                 cursor-not-allowed"
+                      />
+                      <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                     </div>
                   </div>
                 )}

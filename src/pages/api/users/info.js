@@ -52,10 +52,14 @@ export default async function handler(req, res) {
     const [users] = await pool.query(
       `SELECT 
         u.id, 
-        u.email, 
+        u.email,
+        u.created_at as createdAt,
         u.credits,
         u.rank,
-        p.avatar_url
+        u.last_login as lastLogin,
+        p.avatar_url,
+        p.first_name as firstName,
+        p.last_name as lastName
       FROM users u
       LEFT JOIN profiles p ON p.user_id = u.id
       WHERE u.id = ?`,

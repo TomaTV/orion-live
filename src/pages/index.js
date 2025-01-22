@@ -8,6 +8,7 @@ import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
 import Pricing from "@/components/landing/Pricing";
 import HowItWorks from "@/components/landing/HowItWorks";
+import WhyOrion from "@/components/landing/WhyOrion";
 import Faq from "@/components/landing/FAQ";
 import Footer from "@/components/landing/Footer";
 
@@ -53,6 +54,7 @@ export default function Home() {
       <Features />
       <HowItWorks />
       <Pricing />
+      <WhyOrion />
       <Faq />
       <Footer />
     </div>
