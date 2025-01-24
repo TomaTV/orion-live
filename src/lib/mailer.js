@@ -113,7 +113,7 @@ export const SecurityMailer = {
       }
 
       await transporter.sendMail({
-        from: `"Sécurité Orion" <${process.env.SMTP_FROM}>`,
+        from: `"Orion" <${process.env.SMTP_FROM}>`,
         to: email,
         subject,
         html,
@@ -146,7 +146,7 @@ export const SecurityMailer = {
       `;
 
       await transporter.sendMail({
-        from: `"Sécurité Orion" <${process.env.SMTP_FROM}>`,
+        from: `"Orion" <${process.env.SMTP_FROM}>`,
         to: email,
         subject: "🔒 Déconnexion de sécurité effectuée",
         html,

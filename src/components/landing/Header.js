@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Menu } from "lucide-react";
+import { User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { scrollTo } from "../hooks/useSmoothScroll";
 
@@ -93,9 +93,12 @@ export default function Header() {
               </Link>
             </div>
 
-            <button className="md:hidden ml-auto text-gray-300 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors">
-              <Menu size={24} />
-            </button>
+            <Link
+              href="/app"
+              className="md:hidden ml-auto text-gray-300 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              <User size={24} />
+            </Link>
           </div>
         </div>
       </div>

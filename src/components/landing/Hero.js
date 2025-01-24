@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Chart from "../ui/Chart";
 import { Sparkles, ChevronDown, WandSparkles } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { scrollTo } from "../hooks/useSmoothScroll";
 import useMobile from "../hooks/useMobile";
 
@@ -21,13 +21,9 @@ export default function Hero() {
 
   return (
     <div className="relative w-full min-h-[100svh] flex flex-col items-center justify-center -mt-20">
-      {/* Chart en arrière-plan */}
       {isClient && !isMobile && <Chart />}
-
-      {/* Gradient overlay amélioré */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg opacity-90" />
 
-      {/* Contenu principal */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -84,24 +80,24 @@ export default function Hero() {
               </div>
 
               <motion.div className="relative">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    className="w-5 h-5"
-                    initial={{ opacity: 0, rotate: -90 }}
-                    animate={{ opacity: 1, rotate: 0 }}
-                    exit={{ opacity: 0, rotate: 90 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Sparkles className="w-5 h-5 absolute inset-0 group-hover:opacity-0 transition-opacity duration-300" />
-                    <WandSparkles className="w-5 h-5 absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </motion.div>
-                </AnimatePresence>
+                <motion.div
+                  className="w-5 h-5"
+                  initial={{ opacity: 0, rotate: -90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: 90 }}
+                  transition={{ duration: 0.3 }}
+                  key={isMobile ? "mobile" : "desktop"}
+                >
+                  <Sparkles className="w-5 h-5 absolute inset-0 group-hover:opacity-0 transition-opacity duration-300" />
+                  <WandSparkles className="w-5 h-5 absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
               </motion.div>
               <span>Voir une démo</span>
             </Link>
           </div>
         </motion.div>
       </motion.div>
+
       <motion.div
         className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-0 right-0 flex justify-center"
         initial={{ y: 0 }}
