@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import { Home, LogIn, AlertCircle, Loader2 } from "lucide-react";
-import LoginBackground from "../components/ui/LoginBackground";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
@@ -103,8 +102,6 @@ export default function Login() {
 
   return (
     <div className="relative w-full min-h-screen flex items-center justify-center bg-orion-dark-bg">
-      <LoginBackground />
-
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg opacity-90" />
 
       <motion.div
@@ -199,6 +196,8 @@ export default function Login() {
               <input
                 type="email"
                 autoComplete="email"
+                aria-label="Adresse email"
+                aria-required="true"
                 className={`w-full px-4 py-3 rounded-lg bg-black/30 border text-white placeholder-gray-500 transition-all duration-200 outline-none ${
                   errors.email
                     ? "border-red-500/50 focus:ring-2 focus:ring-red-500/50"
@@ -223,6 +222,8 @@ export default function Login() {
               <input
                 type="password"
                 autoComplete="current-password"
+                aria-label="Mot de passe"
+                aria-required="true"
                 className={`w-full px-4 py-3 rounded-lg bg-black/30 border text-white placeholder-gray-500 transition-all duration-200 outline-none ${
                   errors.password
                     ? "border-red-500/50 focus:ring-2 focus:ring-red-500/50"

@@ -13,14 +13,13 @@ export default async function handler(req, res) {
 
     // Vérifier d'abord la session NextAuth
     const session = await getServerSession(req, res, authOptions);
-    
+
     if (session?.user?.email) {
       // Récupérer l'ID utilisateur depuis l'email de la session NextAuth
-      const [users] = await pool.query(
-        "SELECT id FROM users WHERE email = ?",
-        [session.user.email]
-      );
-      
+      const [users] = await pool.query("SELECT id FROM users WHERE email = ?", [
+        session.user.email,
+      ]);
+
       if (users.length > 0) {
         userId = users[0].id;
       }
@@ -57,7 +56,7 @@ export default async function handler(req, res) {
         u.credits,
         u.rank,
         u.last_login as lastLogin,
-        p.avatar_url,
+        p.avatar_url as avatarUrl,
         p.first_name as firstName,
         p.last_name as lastName
       FROM users u

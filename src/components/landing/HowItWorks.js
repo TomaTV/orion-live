@@ -32,7 +32,7 @@ export default function HowItWorks() {
 
   return (
     <section className="relative py-24 bg-orion-dark-bg" id="howitworks">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-transparent" />
+      <div className="absolute inset-0" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <motion.div

@@ -3,7 +3,7 @@ import pool from "../../../lib/db";
 import crypto from "crypto";
 import { rateLimit } from "@/lib/rateLimit";
 import { validateEmail } from "@/lib/validation";
-import { SecurityMonitoring } from '@/lib/securityMonitoring';
+import { SecurityMonitoring } from "@/lib/securityMonitoring";
 
 // Configuration du rate limiter
 const limiter = rateLimit({
@@ -21,21 +21,27 @@ export default async function handler(req, res) {
     }
 
     // Récupération de l'IP et user agent
-    const rawIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "::1";
+    const rawIp =
+      req.headers["x-forwarded-for"] || req.socket.remoteAddress || "::1";
     if (rawIp === "127.0.0.1" || rawIp === "::1") {
       clientIp = "::ffff:127.0.0.1";
     } else {
       clientIp = rawIp;
     }
 
-    const userAgent = req.headers["x-user-agent"] || req.headers["user-agent"] || "unknown";
-    const deviceId = crypto.createHash('sha256').update(userAgent).digest('hex');
+    const userAgent =
+      req.headers["x-user-agent"] || req.headers["user-agent"] || "unknown";
+    const deviceId = crypto
+      .createHash("sha256")
+      .update(userAgent)
+      .digest("hex");
 
     try {
       await limiter.check(clientIp);
     } catch (error) {
       return res.status(429).json({
-        message: "Trop de tentatives de connexion. Veuillez réessayer plus tard.",
+        message:
+          "Trop de tentatives de connexion. Veuillez réessayer plus tard.",
       });
     }
 
@@ -43,7 +49,10 @@ export default async function handler(req, res) {
 
     if (!email || !password || !validateEmail(email)) {
       return res.status(400).json({
-        message: !email || !password ? "Email et mot de passe requis." : "Format d'email invalide."
+        message:
+          !email || !password
+            ? "Email et mot de passe requis."
+            : "Format d'email invalide.",
       });
     }
 
@@ -63,16 +72,25 @@ export default async function handler(req, res) {
     const user = users[0];
 
     if (!user) {
-      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_NOT_FOUND", logId]);
-      return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+        "FAILED_NOT_FOUND",
+        logId,
+      ]);
+      return res
+        .status(401)
+        .json({ message: "Email ou mot de passe incorrect" });
     }
 
     // Vérification du compte Google
     if (user.google_id) {
-      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_GOOGLE_ACCOUNT", logId]);
+      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+        "FAILED_GOOGLE_ACCOUNT",
+        logId,
+      ]);
       return res.status(400).json({
-        message: "Ce compte utilise la connexion Google. Veuillez vous connecter avec Google.",
-        isGoogleAccount: true
+        message:
+          "Ce compte utilise la connexion Google. Veuillez vous connecter avec Google.",
+        isGoogleAccount: true,
       });
     }
 
@@ -80,9 +98,12 @@ export default async function handler(req, res) {
     const now = new Date();
     if (user.lock_until && new Date(user.lock_until) > now) {
       const lockTime = Math.ceil((new Date(user.lock_until) - now) / 1000 / 60);
-      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_LOCKED", logId]);
+      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+        "FAILED_LOCKED",
+        logId,
+      ]);
       return res.status(403).json({
-        message: `Compte temporairement verrouillé. Réessayez dans ${lockTime} minutes.`
+        message: `Compte temporairement verrouillé. Réessayez dans ${lockTime} minutes.`,
       });
     }
 
@@ -111,25 +132,63 @@ export default async function handler(req, res) {
       const newFailedAttempts = result[0]?.failed_attempts || 1;
 
       if (newFailedAttempts >= 5) {
-        await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_MAX_ATTEMPTS", logId]);
+        await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+          "FAILED_MAX_ATTEMPTS",
+          logId,
+        ]);
         return res.status(403).json({
-          message: "Compte bloqué pendant 30 minutes suite à trop de tentatives échouées.",
+          message:
+            "Compte bloqué pendant 30 minutes suite à trop de tentatives échouées.",
           locked: true,
-          lockDuration: 30
+          lockDuration: 30,
         });
       }
 
-      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", ["FAILED_INVALID_PASSWORD", logId]);
+      await pool.query("UPDATE security_logs SET status = ? WHERE id = ?", [
+        "FAILED_INVALID_PASSWORD",
+        logId,
+      ]);
 
       return res.status(401).json({
-        message: newFailedAttempts === 4 
-          ? "ATTENTION : Dernière tentative avant blocage du compte !"
-          : `Email ou mot de passe incorrect. Il vous reste ${5 - newFailedAttempts} tentatives.`,
-        attemptsLeft: 5 - newFailedAttempts
+        message:
+          newFailedAttempts === 4
+            ? "ATTENTION : Dernière tentative avant blocage du compte !"
+            : `Email ou mot de passe incorrect. Il vous reste ${5 - newFailedAttempts} tentatives.`,
+        attemptsLeft: 5 - newFailedAttempts,
       });
     }
 
     try {
+      // Vérification et mise à jour du device
+      const [existingDevice] = await pool.query(
+        "SELECT id, login_count FROM user_devices WHERE user_id = ? AND device_id = ?",
+        [user.id, deviceId]
+      );
+
+      if (existingDevice.length > 0) {
+        // Mettre à jour le compteur de connexions
+        await pool.query(
+          `UPDATE user_devices 
+           SET login_count = login_count + 1,
+               last_ip = ?,
+               user_agent = ?,
+               updated_at = NOW()
+           WHERE id = ?`,
+          [clientIp, userAgent, existingDevice[0].id]
+        );
+
+        // Vérifier si le device doit devenir trusted
+        if (
+          !existingDevice[0].is_trusted &&
+          existingDevice[0].login_count + 1 >= 5
+        ) {
+          await fetch(`${process.env.NEXTAUTH_URL}/api/users/verify-device`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+
       // Mise à jour légère de l'utilisateur
       await pool.query(
         `UPDATE users 
@@ -147,7 +206,7 @@ export default async function handler(req, res) {
         email: user.email,
         ip: clientIp,
         deviceId,
-        userAgent
+        userAgent,
       });
 
       // Mise à jour du log de sécurité
@@ -162,7 +221,6 @@ export default async function handler(req, res) {
         email: user.email,
         name: user.email,
       });
-
     } catch (error) {
       console.error("Error during login process:", error);
       throw error;

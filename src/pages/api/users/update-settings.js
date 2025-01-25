@@ -29,6 +29,13 @@ async function validateSettings(settings) {
     errors.push("L'URL de l'avatar doit être sécurisée (https)");
   }
 
+  if (
+    settings.notifications_report !== undefined &&
+    typeof settings.notifications_report !== "boolean"
+  ) {
+    errors.push("Format des notifications invalide");
+  }
+
   return errors;
 }
 
@@ -57,7 +64,10 @@ export default async function handler(req, res) {
           p.first_name AS firstName,
           p.last_name AS lastName,
           p.avatar_url AS avatarUrl,
-          us.theme
+          us.theme,
+          us.notifications_report AS emailReports,
+          us.notifications_offers AS emailPromotions,
+          us.notifications_security AS emailSecurity
         FROM profiles p
         LEFT JOIN user_settings us ON p.user_id = us.user_id
         WHERE p.user_id = ?`,
@@ -72,7 +82,15 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const { theme, firstName, lastName, avatarUrl } = req.body;
+      const {
+        theme,
+        firstName,
+        lastName,
+        avatarUrl,
+        notifications_report,
+        notifications_offers,
+        notifications_security,
+      } = req.body;
 
       const validationErrors = await validateSettings({
         theme,
@@ -100,25 +118,52 @@ export default async function handler(req, res) {
 
       try {
         // Mise à jour des paramètres utilisateur
-        if (theme) {
-          await pool.query(
-            `INSERT INTO user_settings (user_id, theme) 
-             VALUES (?, ?) 
-             ON DUPLICATE KEY UPDATE theme = ?`,
-            [userId, theme, theme]
-          );
-        }
+        await pool.query(
+          `INSERT INTO user_settings (
+            user_id, 
+            theme,
+            notifications_report,
+            notifications_offers,
+            notifications_security
+          ) VALUES (?, ?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE 
+            theme = COALESCE(?, theme),
+            notifications_report = COALESCE(?, notifications_report),
+            notifications_offers = COALESCE(?, notifications_offers),
+            notifications_security = COALESCE(?, notifications_security)`,
+          [
+            userId,
+            theme,
+            notifications_report,
+            notifications_offers,
+            notifications_security,
+            theme,
+            notifications_report,
+            notifications_offers,
+            notifications_security,
+          ]
+        );
 
         // Mise à jour ou insertion dans la table "profiles"
-        await pool.query(
-          `INSERT INTO profiles (user_id, first_name, last_name, avatar_url)
-           VALUES (?, ?, ?, ?)
-           ON DUPLICATE KEY UPDATE
-             first_name = VALUES(first_name),
-             last_name = VALUES(last_name),
-             avatar_url = VALUES(avatar_url)`,
-          [userId, firstName || null, lastName || null, avatarUrl || null]
-        );
+        if (firstName || lastName || avatarUrl !== undefined) {
+          await pool.query(
+            `INSERT INTO profiles (user_id, first_name, last_name, avatar_url)
+             VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE
+               first_name = ?,
+               last_name = ?,
+               avatar_url = ?`,
+            [
+              userId,
+              firstName || null,
+              lastName || null,
+              avatarUrl || null,
+              firstName || null,
+              lastName || null,
+              avatarUrl || null,
+            ]
+          );
+        }
 
         // Log succès
         await pool.query(
@@ -136,7 +181,10 @@ export default async function handler(req, res) {
             p.first_name AS firstName,
             p.last_name AS lastName,
             p.avatar_url AS avatarUrl,
-            us.theme
+            us.theme,
+            us.notifications_report AS emailReports,
+            us.notifications_offers AS emailPromotions,
+            us.notifications_security AS emailSecurity
           FROM profiles p
           LEFT JOIN user_settings us ON p.user_id = us.user_id
           WHERE p.user_id = ?`,

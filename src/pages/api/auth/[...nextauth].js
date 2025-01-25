@@ -76,7 +76,7 @@ export const authOptions = {
           return { id: data.id, email: data.email, name: data.name };
         } catch (error) {
           console.error("Authorization error:", error);
-          throw new Error("Invalid email or password");
+          throw new Error("Email ou mot de passe invalide");
         }
       },
     }),
@@ -235,14 +235,14 @@ export const authOptions = {
                   ) VALUES (?, ?, ?, ?, ?, ?)`,
                   [userId, deviceId, userAgent, clientIp, false, 1]
                 );
-                
+
                 // Vérifier si on a déjà envoyé un email pour ce device
                 const [emailLogs] = await pool.query(
                   `SELECT * FROM security_email_logs 
                    WHERE user_id = ? AND device_id = ? AND email_type = 'new_device'`,
                   [userId, deviceId]
                 );
-                
+
                 if (emailLogs.length === 0) {
                   // Envoyer l'email de nouveau device
                   await pool.query(
@@ -256,24 +256,38 @@ export const authOptions = {
                 // Mettre à jour le compteur de connexions
                 await pool.query(
                   `UPDATE user_devices 
-                   SET login_count = login_count + 1,
+                   SET login_count = CASE
+                         WHEN login_count + 1 >= 5 AND is_trusted = 0 THEN 0
+                         ELSE login_count + 1
+                       END,
+                       is_trusted = CASE
+                         WHEN login_count + 1 >= 5 THEN 1
+                         ELSE is_trusted
+                       END,
                        last_verified_at = NOW()
                    WHERE user_id = ? AND device_id = ?`,
                   [userId, deviceId]
                 );
-                
-                // Vérifier si le device doit devenir trusted
-                const [deviceInfo] = await pool.query(
+
+                // Vérifier si le device vient d'être trusted
+                const [updatedDevice] = await pool.query(
                   `SELECT login_count, is_trusted FROM user_devices
                    WHERE user_id = ? AND device_id = ?`,
                   [userId, deviceId]
                 );
-                
-                if (deviceInfo[0] && deviceInfo[0].login_count >= 3 && !deviceInfo[0].is_trusted) {
+
+                if (updatedDevice[0]?.is_trusted === 1) {
+                  // Log du changement de statut
                   await pool.query(
-                    `UPDATE user_devices SET is_trusted = 1
-                     WHERE user_id = ? AND device_id = ?`,
-                    [userId, deviceId]
+                    `INSERT INTO security_logs (type, email, ip_address, user_agent, status, error)
+                     VALUES (?, ?, ?, ?, 'SUCCESS', ?)`,
+                    [
+                      "DEVICE_TRUSTED",
+                      profile.email,
+                      clientIp,
+                      userAgent,
+                      JSON.stringify({ deviceId }),
+                    ]
                   );
                 }
               }

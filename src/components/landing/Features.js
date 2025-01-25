@@ -79,7 +79,7 @@ export default function Features() {
 
   return (
     <section id="features" className="relative py-24 bg-orion-dark-bg">
-      <div className="absolute inset-0 bg-gradient-to-b from-orion-dark-bg via-black/50 to-orion-dark-bg pointer-events-none" />
+      <div className="absolute inset-0 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <motion.div

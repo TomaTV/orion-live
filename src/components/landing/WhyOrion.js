@@ -30,7 +30,7 @@ const WhyOrion = () => {
 
   return (
     <section className="py-24 bg-orion-dark-bg relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-orion-dark-bg via-orion-dark-bg/50 to-orion-dark-bg opacity-50" />
+      <div className="absolute inset-0" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <motion.div

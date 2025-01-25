@@ -134,11 +134,11 @@ export default function Pricing() {
 
                   <Link
                     href={
-                      plan.price === "0"
+                      plan.name === "Gratuit"
                         ? "/app"
-                        : plan.price === "99"
-                          ? "/contact"
-                          : "/checkout"
+                        : plan.name === "Pro"
+                          ? "/checkout?plan=Pro"
+                          : "/checkout?plan=Entreprise"
                     }
                     className={`block w-full text-center py-3 px-4 rounded-lg transition-colors mt-auto ${
                       plan.popular

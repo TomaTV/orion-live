@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2 } from "lucide-react";
-import LoginBackground from "../components/ui/LoginBackground";
 
 export default function PasswordReset() {
   const router = useRouter();
@@ -49,8 +48,6 @@ export default function PasswordReset() {
 
   return (
     <div className="relative w-full min-h-screen flex items-center justify-center bg-orion-dark-bg">
-      <LoginBackground />
-
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg opacity-90" />
 
       <motion.div

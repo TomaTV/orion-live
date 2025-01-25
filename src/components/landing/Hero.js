@@ -20,9 +20,9 @@ export default function Hero() {
   };
 
   return (
-    <div className="relative w-full min-h-[100svh] flex flex-col items-center justify-center -mt-20">
+    <div className="relative w-full min-h-[100svh] flex flex-col items-center justify-center -mt-20 bg-orion-dark-bg">
       {isClient && !isMobile && <Chart />}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg opacity-90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orion-dark-bg" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

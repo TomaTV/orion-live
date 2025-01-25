@@ -1,93 +1,52 @@
 /* eslint-disable @next/next/no-img-element */
 import { handleLogout as handleAuthLogout } from "@/lib/securityMonitoring";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { LogOut, Moon, Sun, Plus, Sparkles, User } from "lucide-react";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 
 function HeaderApp() {
   const [credits, setCredits] = useState(0);
   const [avatar, setAvatar] = useState(null);
-  const [isDark, setIsDark] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [changeCount, setChangeCount] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [lockTimer, setLockTimer] = useState(null);
   const router = useRouter();
-  const timeoutRef = useRef(null);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
+    // Charger depuis le cache
+    const cachedData = localStorage.getItem("userProfile");
+    if (cachedData) {
+      const data = JSON.parse(cachedData);
+      setCredits(data.credits);
+      setAvatar(data.avatarUrl);
+    }
+
     const loadInitialData = async () => {
       try {
-        // Charger les infos utilisateur (crédits et préférences)
         const response = await fetch("/api/users/info");
         const data = await response.json();
         if (response.ok) {
           setCredits(data.credits);
-          setAvatar(data.avatar_url);
-
-          // Si l'utilisateur a une préférence de thème en base, l'utiliser
-          if (data.theme) {
-            setIsDark(data.theme === "dark");
-            localStorage.setItem("theme", data.theme);
-            document.documentElement.classList.toggle(
-              "dark",
-              data.theme === "dark"
-            );
-          } else {
-            // Sinon, utiliser le localStorage ou le thème par défaut
-            const localTheme = localStorage.getItem("theme") || "dark";
-            setIsDark(localTheme === "dark");
-            document.documentElement.classList.toggle(
-              "dark",
-              localTheme === "dark"
-            );
-          }
+          setAvatar(data.avatarUrl);
+          localStorage.setItem("userProfile", JSON.stringify(data));
         }
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
-        // En cas d'erreur, utiliser le localStorage ou le thème par défaut
-        const localTheme = localStorage.getItem("theme") || "dark";
-        setIsDark(localTheme === "dark");
-        document.documentElement.classList.toggle(
-          "dark",
-          localTheme === "dark"
-        );
       }
     };
 
     loadInitialData();
 
-    // Cleanup des timers si le composant est démonté
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
       if (lockTimer) {
         clearTimeout(lockTimer);
       }
     };
   }, [lockTimer]);
-
-  const updateThemeInDB = async (themeName) => {
-    // Annuler le timeout précédent si existe
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Créer un nouveau timeout
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        await fetch("/api/users/update-settings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ theme: themeName }),
-        });
-      } catch (error) {
-        console.error("Erreur de mise à jour en base:", error);
-      }
-    }, 1000); // 1 seconde de délai
-  };
 
   const toggleTheme = async () => {
     if (isUpdating || isLocked) return;
@@ -99,14 +58,14 @@ function HeaderApp() {
     }
 
     setIsUpdating(true);
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    document.documentElement.classList.toggle("dark", newTheme);
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+
     try {
       await fetch("/api/users/update-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ theme: newTheme ? "dark" : "light" }),
+        body: JSON.stringify({ theme: newTheme }),
       });
     } catch (error) {
       console.error("Erreur lors de la mise à jour du thème:", error);
@@ -123,11 +82,10 @@ function HeaderApp() {
   return (
     <nav className="bg-gray-50/95 dark:bg-black/30 backdrop-blur-xl border-b border-gray-100 dark:border-white/10 shadow-sm transition-colors duration-300">
       <div className="flex justify-between items-center h-16 px-6">
-        {/* Logo */}
         <div className="flex items-center gap-x-3">
           <div className="relative">
             <img
-              src={isDark ? "/img/logo.png" : "/img/logo-black.png"}
+              src={theme === "dark" ? "/img/logo.png" : "/img/logo-black.png"}
               alt="Logo Orion"
               width={40}
               height={40}
@@ -149,6 +107,7 @@ function HeaderApp() {
             </div>
             <Link
               href="/app/pricing"
+              prefetch={false}
               className="p-2 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm"
             >
               <Plus size={20} className="text-gray-600 dark:text-white" />
@@ -159,11 +118,12 @@ function HeaderApp() {
             href="/app/profil"
             className="w-9 h-9 bg-white dark:bg-white/5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm relative overflow-hidden flex items-center justify-center"
           >
-            {avatar ? (
+            {avatar && avatar !== "" ? (
               <img
                 src={avatar}
                 alt="Profile"
                 className="w-full h-full object-cover rounded-lg"
+                onError={(e) => (e.target.src = "/img/profil.jpg")} // Utiliser une image par défaut si l'avatar échoue
               />
             ) : (
               <User size={20} className="text-gray-600 dark:text-white" />
@@ -182,7 +142,7 @@ function HeaderApp() {
                 : "Changer le thème"
             }
           >
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
           <button
