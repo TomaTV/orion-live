@@ -1,11 +1,14 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import HeaderApp from "@/components/app/Header";
 import AdminOnly from "@/components/hooks/AdminOnly";
-import SearchBar from "@/components/app/Searchbar";
+import SearchBar from "@/components/app/SearchBar";
+import AnalyzeResult from "@/components/app/AnalyzeResult";
 
 function AppPage() {
-  const router = useRouter(); // On définit le router ici
+  const router = useRouter();
+  const [analyzeData, setAnalyzeData] = useState(null);
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
@@ -24,17 +27,28 @@ function AppPage() {
   return (
     <div className="min-h-screen dark:bg-orion-dark-bg bg-gray-50">
       <HeaderApp />
-      <AdminOnly>
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-orion-nebula dark:text-orion-nebula light:text-orion-light-text font-spaceg">
-            Tableau de bord
-          </h1>
-          <p className="text-lg text-orion-nebula dark:text-orion-nebula light:text-orion-light-text">
-            Bienvenue sur votre tableau de bord, {session.user.email} !
-          </p>
-        </div>
-      </AdminOnly>
-      <SearchBar />
+      <div className="container mx-auto px-4 py-8">
+        <SearchBar onAnalyzeComplete={setAnalyzeData} />
+        {analyzeData ? (
+          <AnalyzeResult data={analyzeData} />
+        ) : (
+          <AdminOnly>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 font-spaceg">
+                Tableau de bord
+              </h1>
+              <div className="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <p className="text-lg text-gray-600 dark:text-gray-300">
+                  Bienvenue sur votre tableau de bord, {session.user.email} !
+                </p>
+                <p className="mt-4 text-gray-500 dark:text-gray-400">
+                  Commencez par analyser un site web en utilisant la barre de recherche ci-dessus.
+                </p>
+              </div>
+            </div>
+          </AdminOnly>
+        )}
+      </div>
     </div>
   );
 }

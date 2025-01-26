@@ -1,10 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
-import { handleLogout as handleAuthLogout } from "@/lib/securityMonitoring";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { LogOut, Moon, Sun, Plus, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "@/context/ThemeContext";
+import { useRouter } from "next/router";
+import { handleLogout as handleAuthLogout } from "@/lib/securityMonitoring";
 
 function HeaderApp() {
   const [credits, setCredits] = useState(0);
@@ -13,11 +13,11 @@ function HeaderApp() {
   const [changeCount, setChangeCount] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [lockTimer, setLockTimer] = useState(null);
+
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    // Charger depuis le cache
     const cachedData = localStorage.getItem("userProfile");
     if (cachedData) {
       const data = JSON.parse(cachedData);
@@ -81,9 +81,9 @@ function HeaderApp() {
 
   return (
     <nav className="bg-gray-50/95 dark:bg-black/30 backdrop-blur-xl border-b border-gray-100 dark:border-white/10 shadow-sm transition-colors duration-300">
-      <div className="flex justify-between items-center h-16 px-6">
-        <div className="flex items-center gap-x-3">
-          <div className="relative">
+      <div className="flex items-center justify-between h-16 px-6">
+        <Link href="/app" className="flex-shrink-0">
+          <div className="relative flex items-center gap-x-3">
             <img
               src={theme === "dark" ? "/img/logo.png" : "/img/logo-black.png"}
               alt="Logo Orion"
@@ -91,11 +91,11 @@ function HeaderApp() {
               height={40}
               className="rounded-xl"
             />
+            <span className="text-xl font-bold text-gray-800 dark:text-white font-spaceg">
+              Orion
+            </span>
           </div>
-          <span className="text-2xl font-bold text-gray-800 dark:text-white font-spaceg">
-            Orion
-          </span>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-4">
@@ -123,7 +123,7 @@ function HeaderApp() {
                 src={avatar}
                 alt="Profile"
                 className="w-full h-full object-cover rounded-lg"
-                onError={(e) => (e.target.src = "/img/profil.jpg")} // Utiliser une image par défaut si l'avatar échoue
+                onError={(e) => (e.target.src = "/img/profil.jpg")}
               />
             ) : (
               <User size={20} className="text-gray-600 dark:text-white" />
@@ -147,7 +147,7 @@ function HeaderApp() {
 
           <button
             onClick={handleLogout}
-            className="p-2 text-gray-600 dark:text-white hover:bg-white dark:hover:bg-white/5 rounded-lg"
+            className="p-2 text-gray-600 dark:text-white hover:bg-white dark:hover:bg-white/5 rounded-lg hover:text-red-500"
             title="Se déconnecter"
           >
             <LogOut size={20} />
