@@ -1,8 +1,37 @@
-import { useState, useEffect } from 'react';
-import { Search, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/router';
+import { useState, useEffect } from "react";
+import { Search, Loader2 } from "lucide-react";
+import { useRouter } from "next/router";
 
-// ... [garder les mêmes fonctions de validation]
+const validateUrl = (input) => {
+  let url = input.trim();
+  if (!url) return { isValid: false, error: "L'URL ne peut pas être vide" };
+
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    if (!parsedUrl.hostname.includes(".")) {
+      return { isValid: false, error: "Domaine invalide" };
+    }
+    if (
+      parsedUrl.hostname === "localhost" ||
+      parsedUrl.hostname.startsWith("127.0.") ||
+      parsedUrl.hostname === "0.0.0.0" ||
+      parsedUrl.hostname.startsWith("192.168.")
+    ) {
+      return {
+        isValid: false,
+        error: "Les URLs locales ne sont pas autorisées",
+      };
+    }
+  } catch {
+    return { isValid: false, error: "URL malformée" };
+  }
+
+  return { isValid: true, url };
+};
 
 export default function SearchBar({ onAnalyzeComplete }) {
   const [search, setSearch] = useState("");
@@ -26,15 +55,20 @@ export default function SearchBar({ onAnalyzeComplete }) {
     setAnalyzeError(null);
 
     try {
-      router.push(`/app?search=${encodeURIComponent(validation.url)}`, undefined, { shallow: true });
-      const response = await fetch('/api/analyze/url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: validation.url })
+      router.push(
+        `/app?search=${encodeURIComponent(validation.url)}`,
+        undefined,
+        { shallow: true }
+      );
+      const response = await fetch("/api/analyze/url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: validation.url }),
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Erreur lors de l'analyse");
+      if (!response.ok)
+        throw new Error(data.error || "Erreur lors de l'analyse");
       onAnalyzeComplete?.(data);
     } catch (error) {
       setAnalyzeError(error.message);
@@ -45,7 +79,7 @@ export default function SearchBar({ onAnalyzeComplete }) {
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-12">
-      <div className="relative bg-[#1a1b1e] rounded-xl p-1.5">
+      <div className="relative">
         <div className="flex gap-2">
           <div className="relative flex-1">
             <input
@@ -77,7 +111,7 @@ export default function SearchBar({ onAnalyzeComplete }) {
                      transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
                      hover:shadow-lg hover:shadow-orion-nebula/20"
           >
-            {isAnalyzing ? 'Analyse...' : 'Analyser'}
+            {isAnalyzing ? "Analyse..." : "Analyser"}
           </button>
         </div>
         {analyzeError && (

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { SessionProvider } from "next-auth/react";
 import "../styles/globals.css";
-import { ThemeProvider } from "../context/ThemeContext";
+import { ThemeProvider } from "../lib/theme";
 
 function MyApp({ Component, pageProps }) {
   const router = useRouter();

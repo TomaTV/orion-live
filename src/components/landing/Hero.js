@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Chart from "../ui/Chart";
+import Chart from "@/components/landing/ui/Chart";
 import { Sparkles, ChevronDown, WandSparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { scrollTo } from "../hooks/useSmoothScroll";

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { LogOut, Moon, Sun, Plus, Sparkles, User } from "lucide-react";
 import Link from "next/link";
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/lib/theme";
 import { useRouter } from "next/router";
 import { handleLogout as handleAuthLogout } from "@/lib/securityMonitoring";
 

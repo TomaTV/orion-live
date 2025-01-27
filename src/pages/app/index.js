@@ -4,7 +4,7 @@ import { useState } from "react";
 import HeaderApp from "@/components/app/Header";
 import AdminOnly from "@/components/hooks/AdminOnly";
 import SearchBar from "@/components/app/SearchBar";
-import AnalyzeResult from "@/components/app/AnalyzeResult";
+import AnalyzeResult from "@/components/app/analyze/AnalyzeResult";
 
 function AppPage() {
   const router = useRouter();
@@ -42,7 +42,8 @@ function AppPage() {
                   Bienvenue sur votre tableau de bord, {session.user.email} !
                 </p>
                 <p className="mt-4 text-gray-500 dark:text-gray-400">
-                  Commencez par analyser un site web en utilisant la barre de recherche ci-dessus.
+                  Commencez par analyser un site web en utilisant la barre de
+                  recherche ci-dessus.
                 </p>
               </div>
             </div>
