@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import HeaderApp from "@/components/app/Header";
 import AdminOnly from "@/components/hooks/AdminOnly";
-import SearchBar from "@/components/app/SearchBar";
 import AnalyzeResult from "@/components/app/analyze/AnalyzeResult";
 
 function AppPage() {
@@ -26,9 +25,9 @@ function AppPage() {
 
   return (
     <div className="min-h-screen dark:bg-orion-dark-bg bg-gray-50">
-      <HeaderApp />
+      <HeaderApp onAnalyzeComplete={setAnalyzeData} />
+
       <div className="container mx-auto px-4 py-8">
-        <SearchBar onAnalyzeComplete={setAnalyzeData} />
         {analyzeData ? (
           <AnalyzeResult data={analyzeData} />
         ) : (
